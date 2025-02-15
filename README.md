@@ -1,5 +1,12 @@
 ## ai-yt-summary
 
+### Examples:
+![penguinz0 random video summarized](https://github.com/lesacar/ai-yt-summary/blob/main/res/1.png)
+
+![kanye west song summarized](https://github.com/lesacar/ai-yt-summary/blob/main/res/2.png)
+
+**This extension is really useful for news video like Tech Quickie, The Code Report (from Fireship), Asmongold, etc...**
+
 How to run:
 ```
 uv venv
