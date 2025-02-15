@@ -1,0 +1,17 @@
+{
+    "manifest_version": 3,
+    "name": "Video Summarizer",
+    "version": "1.0",
+    "description": "Summarizes YouTube videos using AI",
+    "permissions": ["storage", "activeTab"],
+    "host_permissions": ["http://localhost:5000/*", "http://localhost:11434/*"],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    }
+}
