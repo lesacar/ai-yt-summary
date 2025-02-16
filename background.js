@@ -106,7 +106,7 @@ async function fetchAICompletion(transcript) {
     const modelName = settings.modelName || defaultModels[provider];
     console.log('Using model:', modelName);
 
-    const systemPrompt = `Summarize the key points of this video transcript in a clear, factual bullet-point list. Focus on concrete information and main topics. Avoid interpretations or speculations.
+    const systemPrompt = `Summarize the key points of this video transcript in a clear, factual bullet-point list. Focus on concrete information and main topics. Avoid interpretations or speculations. If you think the transcript is of a song then interpretation is allowed.
 
 Transcript:
 ${transcript}
