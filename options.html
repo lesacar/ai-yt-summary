@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Summarizer Settings</title>
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .option-group {
+            margin-bottom: 20px;
+        }
+        select, input {
+            margin: 10px 0;
+            padding: 5px;
+            width: 300px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .saved-message {
+            color: green;
+            display: none;
+            margin-top: 10px;
+        }
+        .hint {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Video Summarizer Settings</h2>
+    
+    <div class="option-group">
+        <label for="apiProvider">AI Provider:</label>
+        <select id="apiProvider">
+            <option value="ollama">Ollama (Local)</option>
+            <option value="anthropic">Anthropic Claude</option>
+            <option value="openai">OpenAI GPT</option>
+            <option value="groq">Groq</option>
+        </select>
+    </div>
+
+    <div class="option-group">
+        <label for="modelName">Model Name:</label>
+        <input type="text" id="modelName" placeholder="Enter model name">
+        <div id="modelHint" class="hint"></div>
+    </div>
+
+    <div class="option-group" id="apiKeyGroup">
+        <label for="apiKey">API Key:</label>
+        <input type="password" id="apiKey" placeholder="Enter your API key">
+    </div>
+
+    <button id="save">Save Settings</button>
+    <div id="savedMessage" class="saved-message">Settings saved!</div>
+
+    <script src="options.js"></script>
+</body>
+</html> 

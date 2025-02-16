@@ -13,9 +13,10 @@ def get_transcript():
         url = data['url']
         
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Download subtitles
+            # Download subtitles with --no-playlist flag to prevent playlist downloads
             subprocess.run([
                 'yt-dlp',
+                '--no-playlist',
                 '--skip-download',
                 '--write-subs',
                 '--write-auto-subs',

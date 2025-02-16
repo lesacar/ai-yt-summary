@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const regenerateButton = document.getElementById('regenerate');
     const outputDiv = document.getElementById('output');
     const loader = document.getElementById('loader');
+    const cancelButton = document.getElementById('cancel');
 
     function isYouTubeVideoURL(url) {
         return url && (
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 outputDiv.textContent = "Please navigate to a YouTube video page.";
                 summarizeButton.disabled = true;
                 regenerateButton.style.display = 'none';
+                cancelButton.style.display = 'none';
                 return;
             }
 
@@ -30,23 +32,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         outputDiv.textContent = "Processing...";
                         summarizeButton.disabled = true;
                         regenerateButton.style.display = 'none';
+                        cancelButton.style.display = 'block';
                         loader.style.display = "block";
                     } else if (data.summary) {
                         outputDiv.textContent = data.summary;
                         summarizeButton.style.display = 'none';
                         regenerateButton.style.display = 'block';
                         summarizeButton.disabled = false;
+                        cancelButton.style.display = 'none';
                     } else {
                         outputDiv.textContent = "No summary available.";
                         summarizeButton.disabled = false;
                         summarizeButton.style.display = 'block';
                         regenerateButton.style.display = 'none';
+                        cancelButton.style.display = 'none';
                     }
                 } else {
                     outputDiv.textContent = "Click 'Summarize' to generate a summary.";
                     summarizeButton.style.display = 'block';
                     regenerateButton.style.display = 'none';
                     summarizeButton.disabled = false;
+                    cancelButton.style.display = 'none';
                 }
             });
         });
@@ -104,12 +110,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 outputDiv.textContent = "";
                 summarizeButton.style.display = 'block';
                 regenerateButton.style.display = 'none';
+                cancelButton.style.display = 'none';
                 chrome.runtime.sendMessage({ action: "processVideo", url }, (response) => {
                     if (response && response.error) {
                         loader.style.display = "none";
                         outputDiv.textContent = `Error: ${response.error}`;
                     }
                 });
+            });
+        });
+    });
+
+    // Add cancel button handler
+    cancelButton.addEventListener('click', () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const url = tabs[0]?.url;
+            if (!url) return;
+            
+            chrome.storage.local.remove(url, () => {
+                loader.style.display = "none";
+                outputDiv.textContent = "Generation cancelled";
+                summarizeButton.style.display = 'block';
+                regenerateButton.style.display = 'none';
+                cancelButton.style.display = 'none';
             });
         });
     });
