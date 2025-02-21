@@ -7,7 +7,7 @@
 
 **This extension is really useful for news video like Tech Quickie, The Code Report (from Fireship), Asmongold, etc...**
 
-How to run:
+How to run transcript server:
 ```
 uv venv
 uv pip install -r requirements.txt
@@ -16,7 +16,14 @@ source .venv/bin/activate
 python server.py
 ```
 
-You also need to be running llama-server on localhost:11434, you can change the source code to point to other providers like Sam Twinkman but you might need to change the completion request to fit their API because I didn't test it.\
+You can clone the extension on a VPS or other servers and host the transcript server there, makes life a bit easier if you don't want a systemd service or whatever. In the extension options you can change the transcript server URL, **must append /get_transcript** to it!
+
+Works with any OpenAI compatible AI provider. If using **ollama** just put the base url to whatever your IP is.\
+For **llama.cpp**'s **llama-server** you can put whatever in *model name* because it's ingored as it only loads whatever you specified in your ```llama-server -m MODEL_NAME```
+API keys (I think) are **ignored** by ollama and llama.cpp
+
+![groq api example](https://github.com/lesacar/ai-yt-summary/blob/main/res/3.png)
+
 
 You must download an AI model that fits in your GPU, otherwise disable the ```-ngl``` line. (See where it is by ```rg "-ngl"``` in the root folder of the extension, but beware that using the CPU will be pretty slow.\
 
@@ -39,4 +46,5 @@ while in a youtube tab, click the extension icon and click summarize, it should 
 - When using small models, they will keep on referencing "The transcript"
 - When using small models, they will interpret song lyrics that repeat as repetition, instead of realizing it's a chorus or whatever
 *NOTE - on the 2 above points, I didn't actually test if a bigger models doesn't make these mistakes*
+*NOTE - after testing with llama-70B and optimizing the system prompt the above 2 problems went away in most cases but might slip throught once in a while*
 
