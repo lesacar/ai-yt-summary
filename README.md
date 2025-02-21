@@ -45,6 +45,6 @@ while in a youtube tab, click the extension icon and click summarize, it should 
 - No way to clear the output, unless deleting local storage. I think the output is cached per video, so this shouldn't really be a problem."
 - When using small models, they will keep on referencing "The transcript"
 - When using small models, they will interpret song lyrics that repeat as repetition, instead of realizing it's a chorus or whatever
-*NOTE - on the 2 above points, I didn't actually test if a bigger models doesn't make these mistakes*
-*NOTE - after testing with llama-70B and optimizing the system prompt the above 2 problems went away in most cases but might slip throught once in a while*
+- *NOTE - on the 2 above points, I didn't actually test if a bigger models doesn't make these mistakes*
+- *NOTE - after testing with llama-70B and optimizing the system prompt the above 2 problems went away in most cases but might slip throught once in a while*
 
