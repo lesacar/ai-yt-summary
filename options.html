@@ -38,18 +38,41 @@
             font-size: 0.9em;
             margin-top: 5px;
         }
+        .reset-button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 0.8em;
+            padding: 0;
+            margin-left: 10px;
+        }
+        .url-group {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
     <h2>Video Summarizer Settings</h2>
     
+    <br>
+    <h3>Transcript Server Settings</h3>
+    <div class="option-group">
+        <label for="transcriptServer">Transcript Server URL:</label>
+        <div class="url-group">
+            <input type="text" id="transcriptServer" placeholder="http://localhost:5000/get_transcript">
+            <button class="reset-button" id="resetTranscriptServer">Reset to default</button>
+        </div>
+    </div>
+
+    <br>
+    <h3>API Settings</h3>
+
     <div class="option-group">
         <label for="apiProvider">AI Provider:</label>
         <select id="apiProvider">
-            <option value="ollama">Ollama (Local)</option>
-            <option value="anthropic">Anthropic Claude</option>
-            <option value="openai">OpenAI GPT</option>
-            <option value="groq">Groq</option>
+            <option value="openai">OpenAI-compatible API</option>
         </select>
     </div>
 
@@ -62,6 +85,14 @@
     <div class="option-group" id="apiKeyGroup">
         <label for="apiKey">API Key:</label>
         <input type="password" id="apiKey" placeholder="Enter your API key">
+    </div>
+
+    <div class="option-group" id="baseUrlGroup" style="display: none;">
+        <label for="baseUrl">API Base URL:</label>
+        <div class="url-group">
+            <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1">
+            <button class="reset-button" id="resetBaseUrl">Reset to default</button>
+        </div>
     </div>
 
     <button id="save">Save Settings</button>
