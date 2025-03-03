@@ -138,6 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // As an extra safeguard, poll for data updates
-    setInterval(updateUI, 2000);
+    // As an extra safeguard, poll for data updates (can't edit popup -- it will always re render)
+    // setInterval(updateUI, 2000);
 });
