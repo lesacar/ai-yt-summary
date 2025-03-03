@@ -3,6 +3,17 @@
 <head>
     <title>Video Summarizer Settings</title>
     <style>
+        footer {
+        position:fixed;
+        left:4px;
+        bottom:4px;
+        height:30px;
+        color: gray;
+        width:100%;
+        }
+        #gh-marked-link {
+        color: gray;
+        }
         body {
             padding: 20px;
             font-family: Arial, sans-serif;
@@ -95,8 +106,15 @@
         </div>
     </div>
 
+
     <button id="save">Save Settings</button>
     <div id="savedMessage" class="saved-message">Settings saved!</div>
+
+    <footer>
+        <p>
+            This software uses <a target="_blank" href="https://github.com/markedjs/" id="gh-marked-link">marked</a>
+        </p>
+     </footer>
 
     <script src="options.js"></script>
 </body>

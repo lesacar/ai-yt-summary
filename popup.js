@@ -35,7 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         cancelButton.style.display = 'block';
                         loader.style.display = "block";
                     } else if (data.summary) {
-                        outputDiv.textContent = data.summary;
+                        // outputDiv.textContent = data.summary;
+                        outputDiv.innerHTML = data.summary;
                         summarizeButton.style.display = 'none';
                         regenerateButton.style.display = 'block';
                         summarizeButton.disabled = false;

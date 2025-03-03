@@ -1,3 +1,5 @@
+import * as module from "./marked.min.js";
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "processVideo") {
         console.log('Received processVideo request for URL:', request.url);
@@ -46,8 +48,8 @@ async function processVideo(url) {
         console.log('Summary saved to storage');
 
         chrome.runtime.sendMessage({ action: "updateUI", url: url });
-
-    } catch (error) {
+    }
+    catch (error) {
         console.error('Error in processVideo:', error);
         await chrome.storage.local.set({
             [url]: { summary: `Error: ${error.message}`, processing: false }
@@ -84,7 +86,7 @@ async function fetchTranscript(url) {
         console.log('Transcript server response:', data);
 
         if (!data || !data.text) {
-            throw new Error("Invalid response format from transcript server");
+            throw new Error("Invalid response format from transcript server\nIt's possible the channel disabled captions");
         }
 
         return data.text;
@@ -99,8 +101,10 @@ async function fetchAICompletion(transcript) {
     console.log('Making request to AI API...');
 
     const settings = await chrome.storage.local.get(['apiKey', 'modelName', 'baseUrl']);
-    const modelName = settings.modelName || 'gpt-4-turbo-preview';
-     baseUrl = settings.baseUrl || 'https://api.openai.com/v1';
+    const modelName = settings.modelName;
+    let baseUrl = settings.baseUrl;
+    if (!baseUrl) {throw new Error("No base url provided!")}
+    if (!modelName) {throw new Error("No AI model name provided!")}
     if (baseUrl.charAt(baseUrl.length-1) === '/') {
         baseUrl = baseUrl.slice(0, -1);
     }
@@ -121,8 +125,11 @@ async function fetchAICompletion(transcript) {
         if (!summary) {
             throw new Error("No content received from AI");
         }
-
-        return summary;
+        console.log(`Before markdown: ${modelName}:\n${summary}`);
+        let ret = marked.parse(summary);
+        console.log(`Markdown:\n${ret}`);
+        return ret;
+        // return summary;
     } catch (error) {
         console.error('Error in fetchAICompletion:', error);
         throw error;
@@ -144,7 +151,7 @@ async function sendFullTranscript(transcript, modelName, apiKey, baseUrl) {
                 model: modelName,
                 messages: [{
                     role: 'system',
-                    content: 'Output a concise bullet-point summary. Focus on key facts and events. Be direct and objective.'
+                    content: 'You should output markdown when it\'s necessary to list things (e.g. recipe ingredients) or when trying to emphasize something, most of your output should be plain text. Do not use markdown for everything. You should never make the entire markdown a markdown list! The user will provide you with a transcript of a video, your ONLY task is to summarize it. Focus on key facts and events. Be direct and objective.'
                 }, {
                         role: 'user',
                         content: transcript
