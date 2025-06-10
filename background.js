@@ -79,6 +79,7 @@ async function fetchTranscript(url) {
         if (!response.ok) {
             const error = await response.text();
             console.error('Transcript server error:', error);
+            console.error('Maybe youtube broke again and the server needs an updated yt-dlp!');
             throw new Error(`Transcript server: ${error}`);
         }
 
