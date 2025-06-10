@@ -17,6 +17,7 @@ python server.py
 ```
 
 You can clone the extension on a VPS or other servers and host the transcript server there, makes life a bit easier if you don't want a systemd service or whatever. In the extension options you can change the transcript server URL, **must append /get_transcript** to it!
+The python server needs access to any **yt-dlp** binary
 
 Works with any OpenAI compatible AI provider. If using **ollama** just put the base url to whatever your IP is.\
 For **llama.cpp**'s **llama-server** you can put whatever in *model name* because it's ingored as it only loads whatever you specified in your ```llama-server -m MODEL_NAME```
