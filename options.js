@@ -1,3 +1,4 @@
+// options.js
 document.addEventListener('DOMContentLoaded', () => {
     const apiProvider = document.getElementById('apiProvider');
     const apiKeyGroup = document.getElementById('apiKeyGroup');
@@ -63,13 +64,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resetTranscriptServer.addEventListener('click', () => {
         transcriptServer.value = DEFAULT_TRANSCRIPT_SERVER;
+        location.reload();
     });
 
     resetBaseUrl.addEventListener('click', () => {
         baseUrl.value = DEFAULT_OPENAI_URL;
     });
 
-    saveButton.addEventListener('click', () => {
+
+    function saveSettingsAndReload() {
         const settings = {
             apiProvider: apiProvider.value,
             apiKey: apiKey.value,
@@ -82,10 +85,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         chrome.storage.local.set(settings, () => {
-            savedMessage.style.display = 'block';
-            setTimeout(() => {
-                savedMessage.style.display = 'none';
-            }, 2000);
+            if (savedMessage) {
+                savedMessage.style.display = 'block';
+                setTimeout(() => {
+                    savedMessage.style.display = 'none';
+                }, 2000);
+            }
+            window.location.reload(); // Reload to reflect saved state
         });
-    });
+    }
+
+    saveButton.addEventListener('click', saveSettingsAndReload);
+
 }); 

@@ -1,3 +1,4 @@
+// background.js
 import * as module from "./marked.min.js";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -150,7 +151,7 @@ async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summar
     if (summaryStyle === 'concise') {
         systemPrompt += "\n\nThe user explicitly requests the summary to be as concise as possible while retaining all essential information.";
     } else if (summaryStyle) {
-        systemPrompt += "\n\nThe user explicitly requests the summary to be as detailed and comprehensive as possible, including specific examples key quotes if relevant, and even things you would consider not important, the user doesn't want anything to slip by.";
+        systemPrompt += "\n\nThe user explicitly requests the summary to be as detailed and comprehensive as possible, including specific examples, key quotes if relevant, and even things you would consider not important, the user doesn't want anything to slip by.";
     }
 
     try {
