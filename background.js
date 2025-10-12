@@ -37,6 +37,7 @@ async function processVideo(url, summaryStyle = null) {
         console.log('Transcript received:', transcript.substring(0, 100) + '...');
 
         console.log('Fetching AI completion...');
+        console.log('AI style used:', summaryStyle);
         const summary = await fetchAICompletion(transcript, summaryStyle);
         if (!summary) {
             throw new Error("No content received from AI");
@@ -143,13 +144,14 @@ async function fetchAICompletion(transcript, summaryStyle = null) {
 async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summaryStyle) {
     console.log('Sending full transcript to AI API...');
     let systemPrompt = `You are a summarization assistant. The user will provide a transcript of an online video. Your ONLY task is to generate a concise, objective summary that focuses on key facts, events, and main points.
-- Use markdown to make the text more readable (paragraphs, larger text, formatting, newlines...)
+- Use markdown to make the text more readable (paragraphs, formatting, newlines...)
 - Use markdown lists only when listing 3 or more distinct items (e.g., steps, ingredients, or clearly enumerated points).
 - Never format the entire summary as a markdown list.
-- Keep the tone neutral and factual—do not add opinions, interpretations, or fluff.`;
+- Keep the tone neutral and factual—do not add opinions, interpretations, or fluff.
+- Do not say things like "summary:", or otherwise, the user already knows they're reading a summary, only output the relevant summary text and nothing else.`;
 
     if (summaryStyle === 'concise') {
-        systemPrompt += "\n\nThe user explicitly requests the summary to be as concise as possible while retaining all essential information.";
+        systemPrompt += "\n\nThe user explicitly requests the summary to be as concise as possible while retaining only basic information. Instead of using lists, just separate by commas, this policy overrides the markdown list policy. Try to fit the text in one phone screen or less.";
     } else if (summaryStyle) {
         systemPrompt += "\n\nThe user explicitly requests the summary to be as detailed and comprehensive as possible, including specific examples, key quotes if relevant, and even things you would consider not important, the user doesn't want anything to slip by.";
     }
