@@ -66,7 +66,7 @@ async function fetchTranscript(url) {
     const settings = await chrome.storage.local.get(['transcriptServer']);
     const serverUrl = settings.transcriptServer || 'http://localhost:5000/get_transcript';
     if (serverUrl === null) {
-        console.error("serverUrl is null");
+        throw new Error("serverUrl is null");
     }
 
     try {
