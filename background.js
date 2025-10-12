@@ -2,8 +2,8 @@ import * as module from "./marked.min.js";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "processVideo") {
-        console.log('Received processVideo request for URL:', request.url);
-        processVideo(request.url)
+        console.log('Received processVideo request for URL:', request.url, 'Style:', request.summaryStyle);
+        processVideo(request.url, request.summaryStyle)
             .then(() => {
                 console.log('Processing completed successfully');
                 sendResponse({ status: "complete" });
@@ -26,7 +26,7 @@ async function processVideo(url) {
     processingVideos[url] = true;
     try {
         console.log('Starting video processing');
-        await chrome.storage.local.set({ [url]: { summary: null, processing: true } });
+        await chrome.storage.local.set({ [url]: { summary: null, processing: true, summaryStyle } });
 
         console.log('Fetching transcript...');
         const transcript = await fetchTranscript(url);
@@ -36,14 +36,14 @@ async function processVideo(url) {
         console.log('Transcript received:', transcript.substring(0, 100) + '...');
 
         console.log('Fetching AI completion...');
-        const summary = await fetchAICompletion(transcript);
+        const summary = await fetchAICompletion(transcript, summaryStyle);
         if (!summary) {
             throw new Error("No content received from AI");
         }
         console.log('Summary received:', summary.substring(0, 100) + '...');
 
         await chrome.storage.local.set({
-            [url]: { summary: summary, processing: false }
+            [url]: { summary: summary, processing: false, summaryStyle }
         });
         console.log('Summary saved to storage');
 
@@ -52,7 +52,7 @@ async function processVideo(url) {
     catch (error) {
         console.error('Error in processVideo:', error);
         await chrome.storage.local.set({
-            [url]: { summary: `Error: ${error.message}`, processing: false }
+            [url]: { summary: `Error: ${error.message}`, processing: false, summaryStyle }
         });
         chrome.runtime.sendMessage({ action: "updateUI", url: url });
         throw error;
@@ -98,7 +98,7 @@ async function fetchTranscript(url) {
 }
 
 
-async function fetchAICompletion(transcript) {
+async function fetchAICompletion(transcript, summaryStyle = null) {
     console.log('Making request to AI API...');
 
     const settings = await chrome.storage.local.get(['apiKey', 'modelName', 'baseUrl']);
@@ -117,10 +117,11 @@ async function fetchAICompletion(transcript) {
     try {
         // Replace processChunks with sendFullTranscript
         const summary = await sendFullTranscript(
-            transcript, 
-            modelName, 
-            settings.apiKey, 
-            baseUrl
+            transcript,
+            modelName,
+            settings.apiKey,
+            baseUrl,
+            summaryStyle
         );
 
         if (!summary) {
@@ -138,8 +139,19 @@ async function fetchAICompletion(transcript) {
 }
 
 // use this instead of processChunks
-async function sendFullTranscript(transcript, modelName, apiKey, baseUrl) {
+async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summaryStyle) {
     console.log('Sending full transcript to AI API...');
+    let systemPrompt = `You are a summarization assistant. The user will provide a transcript of an online video. Your ONLY task is to generate a concise, objective summary that focuses on key facts, events, and main points.
+- Write primarily in plain text.
+- Use markdown lists only when listing 3 or more distinct items (e.g., steps, ingredients, or clearly enumerated points).
+- Never format the entire summary as a markdown list.
+- Keep the tone neutral and factual—do not add opinions, interpretations, or fluff.`;
+
+    if (summaryStyle === 'concise') {
+        systemPrompt += "\n\nThe user explicitly requests the summary to be as concise as possible while retaining all essential information.";
+    } else if (summaryStyle) {
+        systemPrompt += "\n\nThe user explicitly requests the summary to be as detailed and comprehensive as possible, including specific examples key quotes if relevant, and even things you would consider not important, the user doesn't want anything to slip by.";
+    }
 
     try {
         const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -152,8 +164,8 @@ async function sendFullTranscript(transcript, modelName, apiKey, baseUrl) {
                 model: modelName,
                 messages: [{
                     role: 'system',
-                    content: 'You should output markdown when it\'s necessary to list things (e.g. recipe ingredients) or when trying to emphasize something, most of your output should be plain text. Do not use markdown for everything. You should never make the entire markdown a markdown list! The user will provide you with a transcript of a video, your ONLY task is to summarize it. Focus on key facts and events. Be direct and objective.'
-                }, {
+                    content: systemPrompt},
+                    {
                         role: 'user',
                         content: transcript
                     }],

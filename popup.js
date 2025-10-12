@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const summarizeButton = document.getElementById('summarize');
     const regenerateButton = document.getElementById('regenerate');
+    const conciseButton = document.getElementById('concise');
+    const detailedButton = document.getElementById('detailed');
     const outputDiv = document.getElementById('output');
     const loader = document.getElementById('loader');
     const cancelButton = document.getElementById('cancel');
@@ -13,64 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Update the UI by reading state from chrome.storage for the active tab's URL.
-    function updateUI() {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (!tabs[0] || !isYouTubeVideoURL(tabs[0].url)) {
-                outputDiv.textContent = "Please navigate to a YouTube video page.";
-                summarizeButton.disabled = true;
-                regenerateButton.style.display = 'none';
-                cancelButton.style.display = 'none';
-                return;
-            }
-
-            const url = tabs[0].url;
-            chrome.storage.local.get([url], (result) => {
-                loader.style.display = "none";
-                const data = result[url];
-                if (data) {
-                    if (data.processing) {
-                        outputDiv.textContent = "Processing...";
-                        summarizeButton.disabled = true;
-                        regenerateButton.style.display = 'none';
-                        cancelButton.style.display = 'block';
-                        loader.style.display = "block";
-                    } else if (data.summary) {
-                        // outputDiv.textContent = data.summary;
-                        outputDiv.innerHTML = data.summary;
-                        summarizeButton.style.display = 'none';
-                        regenerateButton.style.display = 'block';
-                        summarizeButton.disabled = false;
-                        cancelButton.style.display = 'none';
-                    } else {
-                        outputDiv.textContent = "No summary available.";
-                        summarizeButton.disabled = false;
-                        summarizeButton.style.display = 'block';
-                        regenerateButton.style.display = 'none';
-                        cancelButton.style.display = 'none';
-                    }
-                } else {
-                    outputDiv.textContent = "Click 'Summarize' to generate a summary.";
-                    summarizeButton.style.display = 'block';
-                    regenerateButton.style.display = 'none';
-                    summarizeButton.disabled = false;
-                    cancelButton.style.display = 'none';
-                }
-            });
-        });
-    }
-
-    // Immediately update the UI when the popup opens.
-    updateUI();
-
-    // Listen for background script messages to update the UI.
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === "updateUI") {
-            updateUI();
-        }
-    });
-
-    // Summarize button: If not already processing, trigger a new summarization.
-    summarizeButton.addEventListener('click', () => {
+    function startSummarization(style = null) {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url;
             if (!url || !isYouTubeVideoURL(url)) {
@@ -82,20 +27,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     outputDiv.textContent = "Already processing...";
                     return;
                 }
-                // Clear previous output and show the loader.
                 outputDiv.textContent = "";
                 loader.style.display = "block";
                 regenerateButton.style.display = "none";
-                // Initiate processing by messaging the background.
-                chrome.runtime.sendMessage({ action: "processVideo", url }, (response) => {
-                    if (response && response.error) {
-                        loader.style.display = "none";
-                        outputDiv.textContent = `Error: ${response.error}`;
-                    }
-                });
+                cancelButton.style.display = "block";
+
+                // Send style to background
+                chrome.runtime.sendMessage({ 
+                    action: "processVideo", 
+                    url, 
+                    summaryStyle: style 
+                }, (response) => {
+                        if (response && response.error) {
+                            loader.style.display = "none";
+                            outputDiv.textContent = `Error: ${response.error}`;
+                            cancelButton.style.display = "none";
+                        }
+                    });
             });
         });
+    }
+
+    // Immediately update the UI when the popup opens.
+    startSummarization();
+
+    // Listen for background script messages to update the UI.
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === "updateUI") {
+            updateUI();
+        }
     });
+
+    // Summarize button: If not already processing, trigger a new summarization.
+    summarizeButton.addEventListener('click', () => startSummarization());
+    conciseButton.addEventListener('click', () => startSummarization('concise'));
+    detailedButton.addEventListener('click', () => startSummarization('detailed'));
 
     // Regenerate button: Force a new summarization.
     regenerateButton.addEventListener('click', () => {
@@ -105,18 +71,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 outputDiv.textContent = "Please navigate to a YouTube video page.";
                 return;
             }
-            // Remove the stored summary then initiate processing.
-            chrome.storage.local.remove(url, () => {
-                loader.style.display = "block";
-                outputDiv.textContent = "";
-                summarizeButton.style.display = 'block';
-                regenerateButton.style.display = 'none';
-                cancelButton.style.display = 'none';
-                chrome.runtime.sendMessage({ action: "processVideo", url }, (response) => {
-                    if (response && response.error) {
-                        loader.style.display = "none";
-                        outputDiv.textContent = `Error: ${response.error}`;
-                    }
+            chrome.storage.local.get([url], (result) => {
+                const currentStyle = result[url]?.summaryStyle || null;
+                chrome.storage.local.remove(url, () => {
+                    loader.style.display = "block";
+                    outputDiv.textContent = "";
+                    summarizeButton.style.display = 'block';
+                    regenerateButton.style.display = 'none';
+                    cancelButton.style.display = 'none';
+                    chrome.runtime.sendMessage({ 
+                        action: "processVideo", 
+                        url, 
+                        summaryStyle: currentStyle 
+                    }, (response) => {
+                            if (response && response.error) {
+                                loader.style.display = "none";
+                                outputDiv.textContent = `Error: ${response.error}`;
+                            }
+                        });
                 });
             });
         });
@@ -127,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url;
             if (!url) return;
-            
             chrome.storage.local.remove(url, () => {
                 loader.style.display = "none";
                 outputDiv.textContent = "Generation cancelled";
