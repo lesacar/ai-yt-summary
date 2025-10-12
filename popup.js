@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Update the UI by reading state from chrome.storage for the active tab's URL.
-    function startSummarization(style = null) {
+    function updateUI(style = null) {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url;
             if (!url || !isYouTubeVideoURL(url)) {
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Immediately update the UI when the popup opens.
-    startSummarization();
+    updateUI();
 
     // Listen for background script messages to update the UI.
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -59,9 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Summarize button: If not already processing, trigger a new summarization.
-    summarizeButton.addEventListener('click', () => startSummarization());
-    conciseButton.addEventListener('click', () => startSummarization('concise'));
-    detailedButton.addEventListener('click', () => startSummarization('detailed'));
+    summarizeButton.addEventListener('click', () => updateUI());
+    conciseButton.addEventListener('click', () => updateUI('concise'));
+    detailedButton.addEventListener('click', () => updateUI('detailed'));
 
     // Regenerate button: Force a new summarization.
     regenerateButton.addEventListener('click', () => {
