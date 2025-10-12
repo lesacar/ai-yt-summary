@@ -18,7 +18,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 const processingVideos = {}; // prevent multiple simultaneous summarizations
 
-async function processVideo(url) {
+async function processVideo(url, summaryStyle = null) {
     if (processingVideos[url]) {
         console.log('Already processing this URL');
         throw new Error("Video already being processed");
