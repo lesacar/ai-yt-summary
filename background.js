@@ -143,7 +143,7 @@ async function fetchAICompletion(transcript, summaryStyle = null) {
 async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summaryStyle) {
     console.log('Sending full transcript to AI API...');
     let systemPrompt = `You are a summarization assistant. The user will provide a transcript of an online video. Your ONLY task is to generate a concise, objective summary that focuses on key facts, events, and main points.
-- Write primarily in plain text.
+- Use markdown to make the text more readable (paragraphs, larger text, formatting, newlines...)
 - Use markdown lists only when listing 3 or more distinct items (e.g., steps, ingredients, or clearly enumerated points).
 - Never format the entire summary as a markdown list.
 - Keep the tone neutral and factual—do not add opinions, interpretations, or fluff.`;
