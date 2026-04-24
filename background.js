@@ -177,8 +177,11 @@ async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summar
         });
 
         if (!response.ok) {
+            const err_text = await response.text();
+            console.error(err_text);
             throw new Error(`AI API: ${response.status}`);
         }
+
 
         const reader = response.body.getReader();
         let fullSummary = '';
