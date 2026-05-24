@@ -11,8 +11,8 @@ app = Flask(__name__)
 CORS(app)
 
 def clean_transcript(text):
-    # Remove music notes and their Unicode variants
-    text = re.sub(r'♪|\u266a', '', text)
+    # Remove music notes
+    text = re.sub(r'♪', '', text)
     
     # Remove parenthetical descriptions like (gentle music)
     text = re.sub(r'\([^)]*\)', '', text)

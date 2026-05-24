@@ -47,9 +47,6 @@
             gap: 8px;
         }
         .nav-btn {
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
             font-size: 20px;
             padding: 5px 10px;
             line-height: 1;
@@ -69,13 +66,13 @@
         #cancel {
             background: #888;
             color: #999;
-            font-weight: 600;
         }
         #cancel:not(:disabled) {
             background: #db4437;
             color: white;
         }
-        .nav-btn:not(:disabled):hover {
+        .nav-btn:not(:disabled):hover,
+        .style-row .btn:not(:disabled):hover {
             filter: brightness(1.1);
         }
 
@@ -95,9 +92,6 @@
             padding: 8px 10px 6px;
         }
         .style-row .btn {
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
             font-size: 20px;
             padding: 5px 10px;
             line-height: 1;
@@ -198,12 +192,10 @@
         }
 
         /* ===== Custom tooltips (instant) ===== */
-        .nav-btn::after {
+        .nav-btn::after,
+        .style-row .btn::after {
             content: attr(data-tooltip);
             position: absolute;
-            top: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
             background: #333;
             color: #fff;
             font-family: Arial, sans-serif;
@@ -219,6 +211,16 @@
             opacity: 0 !important;
             z-index: 1000;
             transition: opacity 0s;
+        }
+        .nav-btn::after {
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .style-row .btn::after {
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
         }
         #summarize::after {
             top: 50%;
@@ -230,37 +232,12 @@
             left: auto;
             right: 0;
             transform: none;
-            text-shadow: none;
-        }
-        .nav-btn:hover::after {
-            opacity: 1 !important;
-        }
-        .style-row .btn::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: calc(100% + 6px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            font-weight: 400;
-            font-style: normal;
-            line-height: 1.4;
-            text-shadow: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0 !important;
-            z-index: 1000;
-            transition: opacity 0s;
         }
         #regenerate::after {
             left: 0;
             transform: none;
         }
+        .nav-btn:hover::after,
         .style-row .btn:hover::after {
             opacity: 1 !important;
         }

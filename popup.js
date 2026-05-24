@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         summarizeButton.setAttribute('data-tooltip', 'Summarize video');
                         regenerateButton.disabled = true;
                         cancelButton.disabled = false;
+                        return;
                     } else if (data.summary) {
                         if (data.summary.startsWith("Error:")) {
                             outputDiv.textContent = data.summary;
@@ -54,20 +55,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             regenerateButton.disabled = false;
                         }
                         cancelButton.disabled = true;
-                    } else {
-                        outputDiv.textContent = "Click ✨ to generate a summary.";
-                        summarizeButton.disabled = false;
-                        summarizeButton.setAttribute('data-tooltip', 'Summarize video');
-                        regenerateButton.disabled = true;
-                        cancelButton.disabled = true;
+                        return;
                     }
-                } else {
-                    outputDiv.textContent = "Click ✨ to generate a summary.";
-                    summarizeButton.disabled = false;
-                    summarizeButton.setAttribute('data-tooltip', 'Summarize video');
-                    regenerateButton.disabled = true;
-                    cancelButton.disabled = true;
                 }
+
+                outputDiv.textContent = "Click ✨ to generate a summary.";
+                summarizeButton.disabled = false;
+                summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                regenerateButton.disabled = true;
+                cancelButton.disabled = true;
             });
         });
     }
@@ -131,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateUI();
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((message) => {
         if (message.action === "updateUI") {
             updateUI();
         }
