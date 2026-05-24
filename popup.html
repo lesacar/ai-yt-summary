@@ -7,7 +7,7 @@
         body {
             width: 400px;
             min-height: 150px;
-            padding: 15px;
+            padding: 0;
             margin: 0;
             font-family: Arial, sans-serif;
             background: white;
@@ -18,53 +18,36 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-family: inherit;
         }
 
-        /* ===== Style group ===== */
-        .top-area {
-            text-align: center;
-            margin-bottom: 6px;
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
-        .style-group {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            border: 1.5px solid #d0d0d0;
-            border-radius: 8px;
-            padding: 4px 6px;
+        button:disabled:hover {
+            filter: none;
         }
-        .style-btn {
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            padding: 5px 10px;
-            line-height: 1;
-            font-size: 20px;
-            background: #4285f4;
-            color: white;
-            font-weight: 600;
-            position: relative;
-        }
-        .style-btn:hover {
-            filter: brightness(1.1);
-        }
-        #summarize { font-size: 22px; }
-        #concise { font-size: 20px; }
-        #detailed { font-size: 20px; }
 
-        /* ===== Bottom row ===== */
-        .bottom-row {
+        /* ===== Navbar ===== */
+        .navbar {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            min-height: 34px;
+            background: #2a2a2a;
+            padding: 6px 10px;
         }
-        .bottom-left {
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .navbar-right {
+            margin-left: auto;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .icon-btn {
+        .nav-btn {
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -75,26 +58,71 @@
             font-weight: 600;
             position: relative;
         }
-        .icon-btn:hover {
+        .nav-btn:not(:disabled):hover {
+            filter: brightness(1.1);
+        }
+        #summarize {
+            background: #4285f4;
+        }
+        #summarize:disabled {
+            background: #888;
+        }
+        #cancel {
+            background: #888;
+        }
+        #cancel:not(:disabled) {
+            background: #db4437;
+        }
+
+        /* ===== Separator ===== */
+        .separator {
+            border: none;
+            height: 2px;
+            background: #4285f4;
+            margin: 0;
+        }
+
+        /* ===== Style row ===== */
+        .style-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 10px 6px;
+        }
+        .style-row .btn {
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 5px 10px;
+            line-height: 1;
+            font-weight: 600;
+            position: relative;
+        }
+        .style-row .btn:not(:disabled):hover {
             filter: brightness(1.1);
         }
         #regenerate {
+            background: #888;
+            color: white;
+        }
+        #regenerate:not(:disabled) {
             background: #34a853;
         }
-        #cancel {
-            background: #db4437;
+        #concise, #detailed {
+            background: #4285f4;
+            color: white;
         }
 
         /* ===== Slider ===== */
         .slider-area {
-            margin-left: auto;
             display: flex;
             align-items: center;
             gap: 6px;
         }
         .slider-area label {
             font-size: 12px;
-            color: #555;
+            color: #ccc;
             white-space: nowrap;
         }
         .slider-area input[type="range"] {
@@ -103,7 +131,7 @@
             height: 6px;
             -webkit-appearance: none;
             appearance: none;
-            background: #c0c0c0;
+            background: #555;
             border-radius: 3px;
             outline: none;
         }
@@ -112,7 +140,7 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: #555;
+            background: #ccc;
             cursor: pointer;
             border: 2px solid #fff;
             box-shadow: 0 1px 3px rgba(0,0,0,0.3);
@@ -121,48 +149,50 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            background: #555;
+            background: #ccc;
             cursor: pointer;
             border: 2px solid #fff;
             box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .slider-area .size-value {
             font-size: 12px;
-            color: #555;
+            color: #ccc;
             min-width: 28px;
             text-align: right;
         }
 
         /* ===== Output ===== */
-        #output {
-            white-space: normal;
-            line-height: 1.6;
-            font-size: 16px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            min-height: 50px;
-        }
-
         .loader {
             display: none;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border: 4px solid #333;
+            border-top: 4px solid #4285f4;
             border-radius: 50%;
             width: 20px;
             height: 20px;
             animation: spin 1s linear infinite;
-            margin-bottom: 10px;
+            margin: 8px auto;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
+        #output {
+            white-space: normal;
+            line-height: 1.6;
+            font-size: 16px;
+            padding: 10px 12px;
+            margin: 0 10px 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #000;
+            color: #fff;
+            min-height: 50px;
+        }
+
         /* ===== Custom tooltips (instant) ===== */
-        .style-btn::after,
-        .icon-btn::after {
+        .nav-btn::after,
+        .style-row .btn::after {
             content: attr(data-tooltip);
             position: absolute;
             bottom: calc(100% + 6px);
@@ -177,32 +207,35 @@
             pointer-events: none;
             opacity: 0;
             z-index: 10;
+            transition: opacity 0s;
         }
-        .style-btn:hover::after,
-        .icon-btn:hover::after {
+        .nav-btn:hover::after,
+        .style-row .btn:hover::after {
             opacity: 1;
         }
     </style>
 </head>
 <body>
-    <div class="top-area">
-        <div class="style-group">
-            <button class="style-btn" id="summarize" data-tooltip="Summarize video">✨</button>
-            <button class="style-btn" id="concise" data-tooltip="More concise">─</button>
-            <button class="style-btn" id="detailed" data-tooltip="More detailed">☰</button>
+    <div class="navbar">
+        <div class="navbar-left">
+            <button class="nav-btn" id="summarize" data-tooltip="Summarize video">✨</button>
+        </div>
+        <div class="navbar-right">
+            <button class="nav-btn" id="cancel" data-tooltip="Cancel generation" disabled>✕</button>
+            <div class="slider-area">
+                <label for="fontSizeSlider">Font Size:</label>
+                <input type="range" id="fontSizeSlider" min="10" max="24" step="2" value="16">
+                <span class="size-value" id="fontSizeValue">16px</span>
+            </div>
         </div>
     </div>
 
-    <div class="bottom-row">
-        <div class="bottom-left">
-            <button class="icon-btn" id="regenerate" data-tooltip="Regenerate summary" style="display:none">↻</button>
-            <button class="icon-btn" id="cancel" data-tooltip="Cancel generation" style="display:none">✕</button>
-        </div>
-        <div class="slider-area">
-            <label for="fontSizeSlider">Font Size:</label>
-            <input type="range" id="fontSizeSlider" min="10" max="24" step="2" value="16">
-            <span class="size-value" id="fontSizeValue">16px</span>
-        </div>
+    <hr class="separator">
+
+    <div class="style-row">
+        <button class="btn" id="regenerate" data-tooltip="Regenerate summary" disabled>↻</button>
+        <button class="btn" id="concise" data-tooltip="More concise">─</button>
+        <button class="btn" id="detailed" data-tooltip="More detailed">☰</button>
     </div>
 
     <div class="loader" id="loader"></div>

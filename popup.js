@@ -16,51 +16,57 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    // ONLY update the UI display - never trigger processing
     function updateUI() {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();
             if (!url || !isYouTubeVideoURL(url)) {
                 outputDiv.textContent = "Please navigate to a YouTube video page.";
                 summarizeButton.disabled = true;
-                regenerateButton.style.display = 'none';
-                cancelButton.style.display = 'none';
+                summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                regenerateButton.disabled = true;
+                cancelButton.disabled = true;
                 loader.style.display = 'none';
                 return;
             }
 
-            summarizeButton.disabled = false;
             chrome.storage.local.get([url], (result) => {
                 const data = result[url];
                 loader.style.display = 'none';
-                cancelButton.style.display = 'none';
 
                 if (data) {
                     if (data.processing) {
                         outputDiv.textContent = "Processing...";
                         loader.style.display = 'block';
-                        summarizeButton.style.display = 'none';
-                        regenerateButton.style.display = 'none';
-                        cancelButton.style.display = 'block';
+                        summarizeButton.disabled = true;
+                        summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                        regenerateButton.disabled = true;
+                        cancelButton.disabled = false;
                     } else if (data.summary) {
                         if (data.summary.startsWith("Error:")) {
                             outputDiv.textContent = data.summary;
-                            summarizeButton.style.display = 'block';
-                            regenerateButton.style.display = 'none';
+                            summarizeButton.disabled = false;
+                            summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                            regenerateButton.disabled = true;
                         } else {
                             outputDiv.innerHTML = data.summary;
-                            summarizeButton.style.display = 'none';
-                            regenerateButton.style.display = 'block';
+                            summarizeButton.disabled = true;
+                            summarizeButton.setAttribute('data-tooltip', 'Use the buttons below after first generation');
+                            regenerateButton.disabled = false;
                         }
+                        cancelButton.disabled = true;
                     } else {
                         outputDiv.textContent = "Click ✨ to generate a summary.";
-                        summarizeButton.style.display = 'block';
-                        regenerateButton.style.display = 'none';
+                        summarizeButton.disabled = false;
+                        summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                        regenerateButton.disabled = true;
+                        cancelButton.disabled = true;
                     }
                 } else {
                     outputDiv.textContent = "Click ✨ to generate a summary.";
-                    summarizeButton.style.display = 'block';
-                    regenerateButton.style.display = 'none';
+                    summarizeButton.disabled = false;
+                    summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                    regenerateButton.disabled = true;
+                    cancelButton.disabled = true;
                 }
             });
         });
@@ -84,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.storage.sync.set({ fontSize: size });
     });
 
-    // Function to start processing (only called by user actions)
     function startProcessing(style = null) {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();
@@ -102,9 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 outputDiv.textContent = "";
                 loader.style.display = "block";
-                summarizeButton.style.display = 'none';
-                regenerateButton.style.display = 'none';
-                cancelButton.style.display = 'block';
+                summarizeButton.disabled = true;
+                summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                regenerateButton.disabled = true;
+                cancelButton.disabled = false;
 
                 chrome.runtime.sendMessage({ 
                     action: "processVideo", 
@@ -114,8 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (response && response.error) {
                         loader.style.display = "none";
                         outputDiv.textContent = `Error: ${response.error}`;
-                        cancelButton.style.display = 'none';
-                        summarizeButton.style.display = 'block';
+                        cancelButton.disabled = true;
+                        summarizeButton.disabled = false;
+                        summarizeButton.setAttribute('data-tooltip', 'Summarize video');
                     }
                 });
             });
@@ -135,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     detailedButton.addEventListener('click', () => startProcessing('detailed'));
 
     regenerateButton.addEventListener('click', () => {
+        if (regenerateButton.disabled) return;
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();
             if (!url || !isYouTubeVideoURL(url)) {
@@ -152,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     cancelButton.addEventListener('click', () => {
+        if (cancelButton.disabled) return;
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();
             if (!url) return;
@@ -159,9 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
             chrome.storage.local.remove(url, () => {
                 loader.style.display = "none";
                 outputDiv.textContent = "Generation cancelled";
-                summarizeButton.style.display = 'block';
-                regenerateButton.style.display = 'none';
-                cancelButton.style.display = 'none';
+                summarizeButton.disabled = false;
+                summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                regenerateButton.disabled = true;
+                cancelButton.disabled = true;
             });
         });
     });
