@@ -194,16 +194,15 @@
         }
 
         /* ===== Custom tooltips (instant) ===== */
-        .nav-btn::after,
-        .style-row .btn::after {
+        .nav-btn::after {
             content: attr(data-tooltip);
             position: absolute;
-            bottom: calc(100% + 6px);
+            top: calc(100% + 6px);
             left: 50%;
             transform: translateX(-50%);
             background: #333;
             color: #fff;
-            font-size: 11px;
+            font-size: 12px;
             padding: 4px 8px;
             border-radius: 4px;
             white-space: nowrap;
@@ -212,7 +211,26 @@
             z-index: 10;
             transition: opacity 0s;
         }
-        .nav-btn:hover::after,
+        .nav-btn:hover::after {
+            opacity: 1;
+        }
+        .style-row .btn::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+            transition: opacity 0s;
+        }
         .style-row .btn:hover::after {
             opacity: 1;
         }
@@ -224,7 +242,7 @@
             <button class="nav-btn" id="summarize" data-tooltip="Summarize video">✨</button>
         </div>
         <div class="navbar-right">
-            <button class="nav-btn" id="cancel" data-tooltip="Cancel generation" disabled>✕</button>
+            <button class="nav-btn" id="cancel" data-tooltip="Cancel generation" disabled>✖</button>
             <div class="slider-area">
                 <label for="fontSizeSlider">Font Size:</label>
                 <input type="range" id="fontSizeSlider" min="10" max="24" step="2" value="16">
