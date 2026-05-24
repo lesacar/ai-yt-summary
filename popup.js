@@ -4,10 +4,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const conciseButton = document.getElementById('concise');
     const detailedButton = document.getElementById('detailed');
     const outputDiv = document.getElementById('output');
+    const outputContent = document.getElementById('output-content');
     const loader = document.getElementById('loader');
     const cancelButton = document.getElementById('cancel');
     const fontSizeSlider = document.getElementById('fontSizeSlider');
     const fontSizeValue = document.getElementById('fontSizeValue');
+    const copyButton = document.getElementById('copy');
 
     function isYouTubeVideoURL(url) {
         return url && (
@@ -20,11 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();
             if (!url || !isYouTubeVideoURL(url)) {
-                outputDiv.textContent = "Please navigate to a YouTube video page.";
+                outputContent.textContent = "Please navigate to a YouTube video page.";
                 summarizeButton.disabled = true;
                 summarizeButton.setAttribute('data-tooltip', 'Summarize video');
                 regenerateButton.disabled = true;
                 cancelButton.disabled = true;
+                copyButton.disabled = true;
                 loader.style.display = 'none';
                 return;
             }
@@ -35,35 +38,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (data) {
                     if (data.processing) {
-                        outputDiv.textContent = "Processing...";
+                        outputContent.textContent = "Processing...";
                         loader.style.display = 'block';
                         summarizeButton.disabled = true;
                         summarizeButton.setAttribute('data-tooltip', 'Summarize video');
                         regenerateButton.disabled = true;
                         cancelButton.disabled = false;
+                        copyButton.disabled = true;
                         return;
                     } else if (data.summary) {
                         if (data.summary.startsWith("Error:")) {
-                            outputDiv.textContent = data.summary;
+                            outputContent.textContent = data.summary;
                             summarizeButton.disabled = false;
                             summarizeButton.setAttribute('data-tooltip', 'Summarize video');
                             regenerateButton.disabled = true;
+                            copyButton.disabled = true;
                         } else {
-                            outputDiv.innerHTML = data.summary;
+                            outputContent.innerHTML = data.summary;
                             summarizeButton.disabled = true;
                             summarizeButton.setAttribute('data-tooltip', 'Use the buttons below after first generation');
                             regenerateButton.disabled = false;
+                            copyButton.disabled = false;
                         }
                         cancelButton.disabled = true;
                         return;
                     }
                 }
 
-                outputDiv.textContent = "Click ✨ to generate a summary.";
+                outputContent.textContent = "Click ✨ to generate a summary.";
                 summarizeButton.disabled = false;
                 summarizeButton.setAttribute('data-tooltip', 'Summarize video');
                 regenerateButton.disabled = true;
                 cancelButton.disabled = true;
+                copyButton.disabled = true;
             });
         });
     }
@@ -90,23 +97,24 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();
             if (!url || !isYouTubeVideoURL(url)) {
-                outputDiv.textContent = "Please navigate to a YouTube video page.";
+                outputContent.textContent = "Please navigate to a YouTube video page.";
                 return;
             }
 
             chrome.storage.local.get([url], (result) => {
                 const data = result[url];
                 if (data && data.processing) {
-                    outputDiv.textContent = "Already processing...";
+                    outputContent.textContent = "Already processing...";
                     return;
                 }
 
-                outputDiv.textContent = "";
+                outputContent.textContent = "";
                 loader.style.display = "block";
                 summarizeButton.disabled = true;
                 summarizeButton.setAttribute('data-tooltip', 'Summarize video');
                 regenerateButton.disabled = true;
                 cancelButton.disabled = false;
+                copyButton.disabled = true;
 
                 chrome.runtime.sendMessage({ 
                     action: "processVideo", 
@@ -115,10 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, (response) => {
                     if (response && response.error) {
                         loader.style.display = "none";
-                        outputDiv.textContent = `Error: ${response.error}`;
+                        outputContent.textContent = `Error: ${response.error}`;
                         cancelButton.disabled = true;
                         summarizeButton.disabled = false;
                         summarizeButton.setAttribute('data-tooltip', 'Summarize video');
+                        copyButton.disabled = true;
                     }
                 });
             });
@@ -137,12 +146,21 @@ document.addEventListener('DOMContentLoaded', () => {
     conciseButton.addEventListener('click', () => startProcessing('concise'));
     detailedButton.addEventListener('click', () => startProcessing('detailed'));
 
+    copyButton.addEventListener('click', () => {
+        if (copyButton.disabled) return;
+        const text = outputContent.textContent || outputContent.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            copyButton.classList.add('flash-success');
+            setTimeout(() => copyButton.classList.remove('flash-success'), 1500);
+        });
+    });
+
     regenerateButton.addEventListener('click', () => {
         if (regenerateButton.disabled) return;
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();
             if (!url || !isYouTubeVideoURL(url)) {
-                outputDiv.textContent = "Please navigate to a YouTube video page.";
+                outputContent.textContent = "Please navigate to a YouTube video page.";
                 return;
             }
             
@@ -163,11 +181,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             chrome.storage.local.remove(url, () => {
                 loader.style.display = "none";
-                outputDiv.textContent = "Generation cancelled";
+                outputContent.textContent = "Generation cancelled";
                 summarizeButton.disabled = false;
                 summarizeButton.setAttribute('data-tooltip', 'Summarize video');
                 regenerateButton.disabled = true;
                 cancelButton.disabled = true;
+                copyButton.disabled = true;
             });
         });
     });

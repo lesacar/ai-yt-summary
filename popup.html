@@ -110,9 +110,19 @@
             background: #34a853;
             color: white;
         }
-        #concise, #detailed {
+        #concise, #detailed, #copy {
             background: #4285f4;
             color: white;
+        }
+        #copy:disabled {
+            background: #888;
+            color: #999;
+        }
+        #copy {
+            margin-left: auto;
+        }
+        #copy.flash-success {
+            background: #34a853 !important;
         }
 
         /* ===== Slider ===== */
@@ -264,9 +274,11 @@
         <button class="btn" id="regenerate" data-tooltip="Regenerate summary" disabled>↻</button>
         <button class="btn" id="concise" data-tooltip="More concise">─</button>
         <button class="btn" id="detailed" data-tooltip="More detailed">☰</button>
+        <button class="btn" id="copy" data-tooltip="Copy summary" disabled>📋</button>
     </div>
 
     <div id="output">
+        <div id="output-content"></div>
         <div class="loader" id="loader"></div>
     </div>
     <script src="popup.js"></script>

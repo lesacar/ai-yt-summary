@@ -30,15 +30,17 @@ async function processVideo(url, summaryStyle = null) {
         await chrome.storage.local.set({ [url]: { summary: null, processing: true, summaryStyle } });
 
         console.log('Fetching transcript...');
-        const transcript = await fetchTranscript(url);
+        const { text: transcript, channel, upload_date } = await fetchTranscript(url);
         if (!transcript) {
             throw new Error("Received empty transcript from server");
         }
         console.log('Transcript received:', transcript.substring(0, 100) + '...');
 
+        const current_date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
         console.log('Fetching AI completion...');
         console.log('AI style used:', summaryStyle);
-        const summary = await fetchAICompletion(transcript, summaryStyle);
+        const summary = await fetchAICompletion(transcript, channel, upload_date, current_date, summaryStyle);
         if (!summary) {
             throw new Error("No content received from AI");
         }
@@ -92,7 +94,7 @@ async function fetchTranscript(url) {
             throw new Error("Invalid response format from transcript server\nIt's possible the channel disabled captions");
         }
 
-        return data.text;
+        return { text: data.text, channel: data.channel || '', upload_date: data.upload_date || '' };
     } catch (error) {
         console.error('Error in fetchTranscript:', error);
         throw error;
@@ -100,7 +102,7 @@ async function fetchTranscript(url) {
 }
 
 
-async function fetchAICompletion(transcript, summaryStyle = null) {
+async function fetchAICompletion(transcript, channel, uploadDate, currentDate, summaryStyle = null) {
     console.log('Making request to AI API...');
 
     const settings = await chrome.storage.local.get(['apiKey', 'modelName', 'baseUrl']);
@@ -123,7 +125,10 @@ async function fetchAICompletion(transcript, summaryStyle = null) {
             modelName,
             settings.apiKey,
             baseUrl,
-            summaryStyle
+            summaryStyle,
+            channel,
+            uploadDate,
+            currentDate
         );
 
         if (!summary) {
@@ -141,20 +146,43 @@ async function fetchAICompletion(transcript, summaryStyle = null) {
 }
 
 // use this instead of processChunks
-async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summaryStyle) {
+async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summaryStyle, channel, uploadDate, currentDate) {
     console.log('Sending full transcript to AI API...');
-    let systemPrompt = `You are a summarization assistant. The user will provide a transcript of an online video. Your ONLY task is to generate a concise, objective summary that focuses on key facts, events, and main points.
-- Use markdown to make the text more readable (paragraphs, formatting, newlines...)
-- Use markdown lists only when listing 3 or more distinct items (e.g., steps, ingredients, or clearly enumerated points).
-- Never format the entire summary as a markdown list.
-- Keep the tone neutral and factual—do not add opinions, interpretations, or fluff.
-- Do not say things like "summary:", or otherwise, the user already knows they're reading a summary, only output the relevant summary text and nothing else.`;
 
-    if (summaryStyle === 'concise') {
-        systemPrompt += "\n\nThe user explicitly requests the summary to be as concise as possible while retaining only basic information. Instead of using lists, just separate by commas, this policy overrides the markdown list policy. Try to fit the text in one phone screen or less.";
-    } else if (summaryStyle) {
-        systemPrompt += "\n\nThe user explicitly requests the summary to be as detailed and comprehensive as possible, including specific examples, key quotes if relevant, and even things you would consider not important, the user doesn't want anything to slip by.";
+    function buildSystemPrompt() {
+        const metadataBlock = `Additional video information:\n# channel name: ${channel}\n# video upload date: ${uploadDate}\n# current date: ${currentDate}`;
+
+        if (summaryStyle === 'concise') {
+            return `The following instructions were programmatically appended and override all previous instructions: Be as concise as possible while retaining only basic information. Instead of using markdown lists, separate items by commas. Try to fit the text in one phone screen or less.
+
+${metadataBlock}`;
+        }
+
+        if (summaryStyle === 'detailed') {
+            return `The following instructions were programmatically appended and override all previous instructions: Be as detailed and comprehensive as possible. Include specific examples, key quotes if relevant, and anything that could be considered not important — the user doesn't want anything to slip by. Use markdown throughout.
+
+${metadataBlock}`;
+        }
+
+        return `You are an analytical assistant. The user will provide a transcript of an online video.
+
+Read the transcript carefully and determine the type of content it is — for example: analytical/opinion, narrative/story, technical tutorial, news reporting, or conversational. Then tailor your response accordingly.
+
+Your entire output will be parsed by a markdown lexer, so use markdown sections, headings, and formatting throughout to structure your response.
+
+Your response should go beyond mere summarization:
+- For analytical or opinion content: identify the core argument, note any assumptions or contradictions, and offer thoughtful pushback or alternative perspectives.
+- For narrative or story content: summarize the plot arc, but focus on character motivations, thematic tension, and what makes the story compelling or flawed.
+- For technical or tutorial content: extract the key concepts and methods, and note any questionable claims or missing context.
+- For news or reporting: contextualize the information — what's the framing, what's left unsaid, what are the implications.
+- Add anything else you deem important for this video — don't feel limited by these categories.
+
+Keep the tone insightful and direct. Do not be rude or dismissive, but do not be a passive regurgitator either. Do not say things like "summary:", "analysis:", or label your sections — just output the content.
+
+${metadataBlock}`;
     }
+
+    const systemPrompt = buildSystemPrompt();
 
     try {
         const response = await fetch(`${baseUrl}/chat/completions`, {

@@ -63,7 +63,25 @@ def get_transcript():
             with open(output_file, 'r') as f:
                 raw_text = f.read()
                 cleaned_text = clean_transcript(raw_text)
-                return jsonify({'text': cleaned_text})
+
+            # Extract video metadata
+            channel = ""
+            upload_date = ""
+            try:
+                meta = subprocess.run(
+                    ['yt-dlp', '--no-playlist', '--skip-download',
+                     '--print', 'channel', '--print', 'upload_date', url],
+                    capture_output=True, text=True, check=True
+                )
+                lines = meta.stdout.strip().split('\n', 1)
+                if len(lines) > 0:
+                    channel = lines[0].strip()
+                if len(lines) > 1:
+                    upload_date = lines[1].strip()
+            except Exception:
+                pass
+
+            return jsonify({'text': cleaned_text, 'channel': channel, 'upload_date': upload_date})
 
     except subprocess.CalledProcessError as e:
         return jsonify({'error': f'yt-dlp error: {e.stderr}'}), 500
