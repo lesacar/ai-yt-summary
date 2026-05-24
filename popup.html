@@ -69,8 +69,7 @@
         #cancel {
             background: #888;
             color: #999;
-            font-weight: 900;
-            text-shadow: 0 0 3px #fff, 0 0 8px rgba(255,255,255,0.3);
+            font-weight: 600;
         }
         #cancel:not(:disabled) {
             background: #db4437;
@@ -217,13 +216,16 @@
             transition: opacity 0s;
         }
         #summarize::after {
-            left: 0;
-            transform: none;
+            top: 50%;
+            bottom: auto;
+            left: calc(100% + 6px);
+            transform: translateY(-50%);
         }
         #cancel::after {
             left: auto;
             right: 0;
             transform: none;
+            text-shadow: none;
         }
         .nav-btn:hover::after {
             opacity: 1 !important;
