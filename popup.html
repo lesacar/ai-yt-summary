@@ -68,7 +68,9 @@
         }
         #cancel {
             background: #888;
-            text-shadow: 0 0 4px rgba(255,255,255,0.3);
+            color: white;
+            font-weight: 900;
+            text-shadow: 0 0 3px #fff, 0 0 8px rgba(255,255,255,0.3);
         }
         #cancel:not(:disabled) {
             background: #db4437;
@@ -238,8 +240,12 @@
             white-space: nowrap;
             pointer-events: none;
             opacity: 0;
-            z-index: 10;
+            z-index: 1000;
             transition: opacity 0s;
+        }
+        #regenerate::after {
+            left: 0;
+            transform: none;
         }
         .style-row .btn:hover::after {
             opacity: 1;
