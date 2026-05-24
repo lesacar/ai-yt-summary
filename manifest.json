@@ -4,13 +4,7 @@
     "version": "1.0",
     "description": "Summarizes YouTube videos using AI",
     "permissions": ["storage", "activeTab"],
-    "host_permissions": [
-        "http://localhost:5000/*",
-        "http://localhost:11434/*",
-        "https://api.anthropic.com/*",
-        "https://api.openai.com/*",
-        "https://api.groq.com/*"
-    ],
+    "host_permissions": ["<all_urls>"],
     "background": {
         "service_worker": "background.js",
         "type": "module"
