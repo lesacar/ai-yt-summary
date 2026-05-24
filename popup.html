@@ -28,35 +28,36 @@
         .style-group {
             display: inline-flex;
             align-items: center;
-            gap: 2px;
-            border: 2px solid #ddd;
+            gap: 3px;
+            border: 1.5px solid #d0d0d0;
             border-radius: 8px;
-            padding: 3px 5px;
+            padding: 4px 6px;
         }
         .style-btn {
-            background: none;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 5px 10px;
             line-height: 1;
-            color: #444;
             font-size: 20px;
+            background: #4285f4;
+            color: white;
+            font-weight: 600;
             position: relative;
         }
         .style-btn:hover {
-            background: #f0f0f0;
+            filter: brightness(1.1);
         }
-        #summarize { font-size: 24px; }
-        #concise { font-size: 22px; }
-        #detailed { font-size: 22px; }
+        #summarize { font-size: 22px; }
+        #concise { font-size: 20px; }
+        #detailed { font-size: 20px; }
 
         /* ===== Bottom row ===== */
         .bottom-row {
             display: flex;
             align-items: center;
             margin-bottom: 8px;
-            min-height: 32px;
+            min-height: 34px;
         }
         .bottom-left {
             display: flex;
@@ -64,21 +65,24 @@
             gap: 8px;
         }
         .icon-btn {
-            background: none;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 20px;
-            padding: 4px 8px;
+            padding: 5px 10px;
             line-height: 1;
-            color: #444;
+            color: white;
+            font-weight: 600;
             position: relative;
         }
         .icon-btn:hover {
-            background: #f0f0f0;
+            filter: brightness(1.1);
+        }
+        #regenerate {
+            background: #34a853;
         }
         #cancel {
-            color: #999;
+            background: #db4437;
         }
 
         /* ===== Slider ===== */
@@ -90,30 +94,41 @@
         }
         .slider-area label {
             font-size: 12px;
-            color: #666;
+            color: #555;
             white-space: nowrap;
         }
         .slider-area input[type="range"] {
-            width: 80px;
+            width: 88px;
             margin: 0;
-            height: 4px;
+            height: 6px;
             -webkit-appearance: none;
             appearance: none;
-            background: #ddd;
-            border-radius: 2px;
+            background: #c0c0c0;
+            border-radius: 3px;
             outline: none;
         }
         .slider-area input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: #666;
+            background: #555;
             cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .slider-area input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #555;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .slider-area .size-value {
             font-size: 12px;
-            color: #666;
+            color: #555;
             min-width: 28px;
             text-align: right;
         }
@@ -170,7 +185,6 @@
     </style>
 </head>
 <body>
-    <!-- Style group: summarize + concise + detailed -->
     <div class="top-area">
         <div class="style-group">
             <button class="style-btn" id="summarize" data-tooltip="Summarize video">✨</button>
@@ -179,7 +193,6 @@
         </div>
     </div>
 
-    <!-- Bottom row: regenerate, cancel, font size slider -->
     <div class="bottom-row">
         <div class="bottom-left">
             <button class="icon-btn" id="regenerate" data-tooltip="Regenerate summary" style="display:none">↻</button>
