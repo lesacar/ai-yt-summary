@@ -22,7 +22,6 @@
         }
 
         button:disabled {
-            opacity: 0.5;
             cursor: not-allowed;
         }
         button:disabled:hover {
@@ -65,15 +64,17 @@
         }
         #summarize:disabled {
             background: #888;
+            color: #999;
         }
         #cancel {
             background: #888;
-            color: white;
+            color: #999;
             font-weight: 900;
             text-shadow: 0 0 3px #fff, 0 0 8px rgba(255,255,255,0.3);
         }
         #cancel:not(:disabled) {
             background: #db4437;
+            color: white;
         }
         .nav-btn:not(:disabled):hover {
             filter: brightness(1.1);
@@ -110,10 +111,11 @@
         }
         #regenerate {
             background: #888;
-            color: white;
+            color: #999;
         }
         #regenerate:not(:disabled) {
             background: #34a853;
+            color: white;
         }
         #concise, #detailed {
             background: #4285f4;
@@ -210,7 +212,7 @@
             border-radius: 4px;
             white-space: nowrap;
             pointer-events: none;
-            opacity: 0;
+            opacity: 0 !important;
             z-index: 1000;
             transition: opacity 0s;
         }
@@ -224,7 +226,7 @@
             transform: none;
         }
         .nav-btn:hover::after {
-            opacity: 1;
+            opacity: 1 !important;
         }
         .style-row .btn::after {
             content: attr(data-tooltip);
@@ -239,7 +241,7 @@
             border-radius: 4px;
             white-space: nowrap;
             pointer-events: none;
-            opacity: 0;
+            opacity: 0 !important;
             z-index: 1000;
             transition: opacity 0s;
         }
@@ -248,7 +250,7 @@
             transform: none;
         }
         .style-row .btn:hover::after {
-            opacity: 1;
+            opacity: 1 !important;
         }
     </style>
 </head>
