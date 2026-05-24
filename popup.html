@@ -13,37 +13,123 @@
             background: white;
             user-select: text;
         }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .button-group button:not(#summarize):not(#regenerate):not(#cancel) {
-            flex: 0 0 auto;
-            padding: 6px 12px;
-            font-size: 24px;
-            background: blueviolet; color: white;
-        }
+
         button {
-            padding: 10px 15px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            flex: 1;
         }
-        #summarize { background: #4285f4; color: white; }
-        #regenerate { background: #34a853; color: white; display: none; }
+
+        /* ===== Style group ===== */
+        .top-area {
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .style-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 3px 5px;
+        }
+        .style-btn {
+            background: none;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 4px 8px;
+            line-height: 1;
+            color: #444;
+            font-size: 20px;
+            position: relative;
+        }
+        .style-btn:hover {
+            background: #f0f0f0;
+        }
+        #summarize { font-size: 24px; }
+        #concise { font-size: 22px; }
+        #detailed { font-size: 22px; }
+
+        /* ===== Bottom row ===== */
+        .bottom-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            min-height: 32px;
+        }
+        .bottom-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 4px 8px;
+            line-height: 1;
+            color: #444;
+            position: relative;
+        }
+        .icon-btn:hover {
+            background: #f0f0f0;
+        }
+        #cancel {
+            color: #999;
+        }
+
+        /* ===== Slider ===== */
+        .slider-area {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .slider-area label {
+            font-size: 12px;
+            color: #666;
+            white-space: nowrap;
+        }
+        .slider-area input[type="range"] {
+            width: 80px;
+            margin: 0;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ddd;
+            border-radius: 2px;
+            outline: none;
+        }
+        .slider-area input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #666;
+            cursor: pointer;
+        }
+        .slider-area .size-value {
+            font-size: 12px;
+            color: #666;
+            min-width: 28px;
+            text-align: right;
+        }
+
+        /* ===== Output ===== */
         #output {
             white-space: normal;
             line-height: 1.6;
-            font-size: 18px;
+            font-size: 16px;
             padding: 10px;
-            margin-top: 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
             background: white;
             min-height: 50px;
         }
+
         .loader {
             display: none;
             border: 4px solid #f3f3f3;
@@ -52,24 +138,62 @@
             width: 20px;
             height: 20px;
             animation: spin 1s linear infinite;
+            margin-bottom: 10px;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* ===== Custom tooltips (instant) ===== */
+        .style-btn::after,
+        .icon-btn::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+        }
+        .style-btn:hover::after,
+        .icon-btn:hover::after {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <div class="button-group">
-        <button id="summarize" title="Neutral style">Summarize</button>
-        <button id="regenerate" title="Neutral style">Regenerate</button>
-        <button id="concise" title="More concise">−</button>
-        <button id="detailed" title="More detailed">+</button>
-        <button id="cancel" style="display: none; background: #db4437; color: white;">Cancel</button>
+    <!-- Style group: summarize + concise + detailed -->
+    <div class="top-area">
+        <div class="style-group">
+            <button class="style-btn" id="summarize" data-tooltip="Summarize video">✨</button>
+            <button class="style-btn" id="concise" data-tooltip="More concise">─</button>
+            <button class="style-btn" id="detailed" data-tooltip="More detailed">☰</button>
+        </div>
     </div>
+
+    <!-- Bottom row: regenerate, cancel, font size slider -->
+    <div class="bottom-row">
+        <div class="bottom-left">
+            <button class="icon-btn" id="regenerate" data-tooltip="Regenerate summary" style="display:none">↻</button>
+            <button class="icon-btn" id="cancel" data-tooltip="Cancel generation" style="display:none">✕</button>
+        </div>
+        <div class="slider-area">
+            <label for="fontSizeSlider">Font Size:</label>
+            <input type="range" id="fontSizeSlider" min="10" max="24" step="2" value="16">
+            <span class="size-value" id="fontSizeValue">16px</span>
+        </div>
+    </div>
+
     <div class="loader" id="loader"></div>
-    <div id="output">
-    </div>
+    <div id="output"></div>
     <script src="popup.js"></script>
 </body>
 </html>

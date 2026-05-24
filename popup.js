@@ -1,4 +1,3 @@
-// popup.js
 document.addEventListener('DOMContentLoaded', () => {
     const summarizeButton = document.getElementById('summarize');
     const regenerateButton = document.getElementById('regenerate');
@@ -7,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const outputDiv = document.getElementById('output');
     const loader = document.getElementById('loader');
     const cancelButton = document.getElementById('cancel');
+    const fontSizeSlider = document.getElementById('fontSizeSlider');
+    const fontSizeValue = document.getElementById('fontSizeValue');
 
     function isYouTubeVideoURL(url) {
         return url && (
@@ -52,19 +53,36 @@ document.addEventListener('DOMContentLoaded', () => {
                             regenerateButton.style.display = 'block';
                         }
                     } else {
-                        // No summary, no error, not processing
-                        outputDiv.textContent = "Click 'Summarize' to generate a summary.";
+                        outputDiv.textContent = "Click ✨ to generate a summary.";
                         summarizeButton.style.display = 'block';
                         regenerateButton.style.display = 'none';
                     }
                 } else {
-                    outputDiv.textContent = "Click 'Summarize' to generate a summary.";
+                    outputDiv.textContent = "Click ✨ to generate a summary.";
                     summarizeButton.style.display = 'block';
                     regenerateButton.style.display = 'none';
                 }
             });
         });
     }
+
+    // Font size slider
+    function applyFontSize(size) {
+        outputDiv.style.fontSize = size + 'px';
+        fontSizeValue.textContent = size + 'px';
+    }
+
+    chrome.storage.sync.get('fontSize', (result) => {
+        const size = result.fontSize || 16;
+        fontSizeSlider.value = size;
+        applyFontSize(size);
+    });
+
+    fontSizeSlider.addEventListener('input', () => {
+        const size = parseInt(fontSizeSlider.value);
+        applyFontSize(size);
+        chrome.storage.sync.set({ fontSize: size });
+    });
 
     // Function to start processing (only called by user actions)
     function startProcessing(style = null) {
@@ -82,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Clear any previous state and start processing
                 outputDiv.textContent = "";
                 loader.style.display = "block";
                 summarizeButton.style.display = 'none';
@@ -105,22 +122,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Immediately update the UI when the popup opens.
     updateUI();
 
-    // Listen for background script messages to update the UI.
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.action === "updateUI") {
             updateUI();
         }
     });
 
-    // Button handlers - only trigger processing on user click
     summarizeButton.addEventListener('click', () => startProcessing());
     conciseButton.addEventListener('click', () => startProcessing('concise'));
     detailedButton.addEventListener('click', () => startProcessing('detailed'));
 
-    // Regenerate button
     regenerateButton.addEventListener('click', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();
@@ -138,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Cancel button
     cancelButton.addEventListener('click', () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const url = tabs[0]?.url?.trim();

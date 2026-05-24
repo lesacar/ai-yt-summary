@@ -34,6 +34,7 @@ def get_transcript():
                 'yt-dlp',
                 '--no-playlist',
                 '--skip-download',
+                '--js-runtimes', 'deno',
                 '--write-subs',
                 '--write-auto-subs',
                 '--sub-lang', 'en',
