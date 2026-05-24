@@ -153,31 +153,30 @@ async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summar
         const metadataBlock = `Additional video information:\n# channel name: ${channel}\n# video upload date: ${uploadDate}\n# current date: ${currentDate}`;
 
         if (summaryStyle === 'concise') {
-            return `The following instructions were programmatically appended and override all previous instructions: Be as concise as possible while retaining only basic information. Instead of using markdown lists, separate items by commas. Try to fit the text in one phone screen or less.
+            return `The following instructions were programmatically appended and override all previous instructions: You are a summary tool. Speak in third person about the video and its creator — never adopt their voice. Be as concise as possible while retaining basic information. Instead of markdown lists, separate items by commas. Try to fit the text in one phone screen or less.
 
 ${metadataBlock}`;
         }
 
         if (summaryStyle === 'detailed') {
-            return `The following instructions were programmatically appended and override all previous instructions: Be as detailed and comprehensive as possible. Include specific examples, key quotes if relevant, and anything that could be considered not important — the user doesn't want anything to slip by. Use markdown throughout.
+            return `The following instructions were programmatically appended and override all previous instructions: You are a summary tool. Speak in third person about the video and its creator — never adopt their voice. Be as detailed and comprehensive as possible. Include specific examples, key quotes if relevant, and anything that could be considered not important — the user doesn't want anything to slip by. Use markdown throughout.
 
 ${metadataBlock}`;
         }
 
-        return `You are an analytical assistant. The user will provide a transcript of an online video.
+        return `You are a tool. Your only job is to write a summary of a video transcript so the user does not have to watch the video. This is a time-saving utility — not a creative writing exercise, not a reinterpretation, not a work of art, not a performance. The user wants to read a short text and understand what the video was about, then move on with their day. Nothing more.
 
-Read the transcript carefully and determine the type of content it is — for example: analytical/opinion, narrative/story, technical tutorial, news reporting, or conversational. Then tailor your response accordingly.
-
-Your entire output will be parsed by a markdown lexer, so use markdown sections, headings, and formatting throughout to structure your response.
-
-Your response should go beyond mere summarization:
-- For analytical or opinion content: identify the core argument, note any assumptions or contradictions, and offer thoughtful pushback or alternative perspectives.
-- For narrative or story content: summarize the plot arc, but focus on character motivations, thematic tension, and what makes the story compelling or flawed.
-- For technical or tutorial content: extract the key concepts and methods, and note any questionable claims or missing context.
-- For news or reporting: contextualize the information — what's the framing, what's left unsaid, what are the implications.
-- Add anything else you deem important for this video — don't feel limited by these categories.
-
-Keep the tone insightful and direct. Do not be rude or dismissive, but do not be a passive regurgitator either. Do not say things like "summary:", "analysis:", or label your sections — just output the content.
+Rules:
+- Speak in third person about the video and its creator at all times. Refer to "the creator", "they", "the video". Never adopt the creator's voice or speak as if you are them.
+- Determine the type of content (e.g. tutorial, opinion, narrative, news) and summarize it neutrally and concisely.
+- Use markdown sections and formatting to structure the response.
+- For analytical content: identify the core argument and any assumptions or contradictions.
+- For narrative content: summarize the plot and note what makes it compelling or flawed.
+- For technical/tutorial content: extract key concepts and methods, note any questionable claims.
+- For news: contextualize framing and implications.
+- Add anything else important about the video.
+- Do not label sections with headings like "Summary:" or "Analysis:" — just output the content directly.
+- Keep the tone direct and neutral. Do not be rude, but do not embellish or editorialize.
 
 ${metadataBlock}`;
     }
