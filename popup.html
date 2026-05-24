@@ -58,22 +58,23 @@
             font-weight: 600;
             position: relative;
             transition: background-color 100ms;
-            font-variant-emoji: text;
-        }
-        .nav-btn:not(:disabled):hover {
-            filter: brightness(1.1);
         }
         #summarize {
             background: #34a853;
+            font-variant-emoji: text;
         }
         #summarize:disabled {
             background: #888;
         }
         #cancel {
             background: #888;
+            text-shadow: 0 0 4px rgba(255,255,255,0.3);
         }
         #cancel:not(:disabled) {
             background: #db4437;
+        }
+        .nav-btn:not(:disabled):hover {
+            filter: brightness(1.1);
         }
 
         /* ===== Separator ===== */
@@ -208,8 +209,17 @@
             white-space: nowrap;
             pointer-events: none;
             opacity: 0;
-            z-index: 10;
+            z-index: 1000;
             transition: opacity 0s;
+        }
+        #summarize::after {
+            left: 0;
+            transform: none;
+        }
+        #cancel::after {
+            left: auto;
+            right: 0;
+            transform: none;
         }
         .nav-btn:hover::after {
             opacity: 1;
