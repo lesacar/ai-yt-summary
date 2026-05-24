@@ -153,13 +153,13 @@ async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summar
         const metadataBlock = `Additional video information:\n# channel name: ${channel}\n# video upload date: ${uploadDate}\n# current date: ${currentDate}`;
 
         if (summaryStyle === 'concise') {
-            return `The following instructions were programmatically appended and override all previous instructions: You are a summary tool. Speak in third person about the video and its creator — never adopt their voice. Be as concise as possible while retaining basic information. Instead of markdown lists, separate items by commas. Try to fit the text in one phone screen or less.
+            return `The following instructions were programmatically appended and override all previous instructions: You are a summary tool. Speak in third person about the video and its creator — never adopt their voice. Be as concise as possible while retaining basic information. Instead of markdown lists, separate items by commas. Try to fit the text in one phone screen or less. Still use **bold** and *italic* to mark important terms — just do it sparingly since space is tight.
 
 ${metadataBlock}`;
         }
 
         if (summaryStyle === 'detailed') {
-            return `The following instructions were programmatically appended and override all previous instructions: You are a summary tool. Speak in third person about the video and its creator — never adopt their voice. Be as detailed and comprehensive as possible. Include specific examples, key quotes if relevant, and anything that could be considered not important — the user doesn't want anything to slip by. Use markdown throughout.
+            return `The following instructions were programmatically appended and override all previous instructions: You are a summary tool. Speak in third person about the video and its creator — never adopt their voice. Be as detailed and comprehensive as possible. Include specific examples, key quotes if relevant, and anything that could be considered not important — the user doesn't want anything to slip by. Use markdown throughout — headings, bold, italic, lists, inline code, blockquotes. **Bold** or *italicize* important terms, concepts, tools, languages, key quotes, and anything the creator emphasizes.
 
 ${metadataBlock}`;
         }
@@ -169,7 +169,7 @@ ${metadataBlock}`;
 Rules:
 - Speak in third person about the video and its creator at all times. Refer to "the creator", "they", "the video". Never adopt the creator's voice or speak as if you are them.
 - Determine the type of content (e.g. tutorial, opinion, narrative, news) and summarize it neutrally and concisely.
-- Use markdown sections and formatting to structure the response.
+- Use markdown throughout — headings, bold, italic, lists, inline code, blockquotes, everything. **Bold** or *italicize* important terms, concepts, tools, languages, key quotes, and anything the creator emphasizes. If something matters, mark it.
 - For analytical content: identify the core argument and any assumptions or contradictions.
 - For narrative content: summarize the plot and note what makes it compelling or flawed.
 - For technical/tutorial content: extract key concepts and methods, note any questionable claims.
