@@ -163,12 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 outputContent.textContent = "Please navigate to a YouTube video page.";
                 return;
             }
-            
-            chrome.storage.local.get([url], (result) => {
-                const currentStyle = result[url]?.summaryStyle || null;
-                chrome.storage.local.remove(url, () => {
-                    startProcessing(currentStyle);
-                });
+
+            chrome.storage.local.remove(url, () => {
+                startProcessing();
             });
         });
     });
