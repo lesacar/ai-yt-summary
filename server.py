@@ -4,6 +4,8 @@ import subprocess
 import tempfile
 from waitress import serve
 import re
+import shlex
+import logging
 
 app = Flask(__name__)
 CORS(app)
@@ -28,10 +30,11 @@ def get_transcript():
         
         with tempfile.TemporaryDirectory() as tmpdir:
             # Download subtitles
-            subprocess.run([
+            cmd = [
                 'yt-dlp',
                 '--no-playlist',
                 '--skip-download',
+                '--js-runtimes', 'bun',
                 '--write-subs',
                 '--write-auto-subs',
                 '--sub-lang', 'en',
@@ -39,7 +42,12 @@ def get_transcript():
                 '--convert-subs', 'srt',
                 '--output', f'{tmpdir}/transcript.%(ext)s',
                 url
-            ], check=True)
+            ]
+
+            print("yt-dlp command:")
+            print(shlex.join(cmd))
+            subprocess.run(cmd, check=True)
+
 
             # Clean and format subtitles
             output_file = f'{tmpdir}/output.txt'
@@ -63,4 +71,5 @@ def get_transcript():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
+    logging.getLogger('waitress').setLevel(logging.INFO)
     serve(app, host='0.0.0.0', port=5000)

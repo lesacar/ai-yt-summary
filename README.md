@@ -7,6 +7,9 @@
 
 **This extension is really useful for news video like Tech Quickie, The Code Report (from Fireship), Asmongold, etc...**
 
+### Dependencies
+As of recently, yt-dlp requires a JS runtime, this project has it hardcoded to ```bun```
+
 How to run transcript server:
 ```
 uv venv
