@@ -110,6 +110,8 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
     let baseUrl = settings.baseUrl;
     if (!baseUrl) {throw new Error("No base url provided!")}
     if (!modelName) {throw new Error("No AI model name provided!")}
+
+    // if user types api.openai.com/chat/completions/ -- strip the extra '/' for fetch because js sucks
     if (baseUrl.charAt(baseUrl.length-1) === '/') {
         baseUrl = baseUrl.slice(0, -1);
     }
@@ -152,20 +154,21 @@ async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summar
     function buildSystemPrompt() {
         const metadataBlock = `Additional video information:\n# channel name: ${channel}\n# video upload date: ${uploadDate}\n# current date: ${currentDate}`;
 
-        let prompt = `You are a tool. Your only job is to write a summary of a video transcript so the user does not have to watch the video. This is a time-saving utility — not a creative writing exercise, not a reinterpretation, not a work of art, not a performance. The user wants to read a short text and understand what the video was about, then move on with their day. Nothing more.
+        let prompt = `You are a tool. Your only job is to write a summary of a video transcript so the user does not have to watch the video. This is a time-saving utility — not a creative writing exercise, not a reinterpretation, not a work of art, not a performance. The user wants to read a text summary and understand what the video was about, then move on with their day. Nothing more.
 
 Rules:
 - Speak in third person about the video and its creator at all times. Refer to "the creator", "they", "the video". Never adopt the creator's voice or speak as if you are them.
 - Attribute statements to whoever actually said them, not to the channel or "the host". If the creator is speaking as themselves, say "the creator says" or use their name. If they're quoting someone else (e.g. an expert, a witness, a resident), attribute the statement to that person instead. Let the context of the transcript tell you who is speaking.
+- IMPORTANT: if you are confident that the speaker is also the channel name, you should say "channel_name said this and that" instead of "the creator said this and that", but ONLY if you are confident that the creator is also the channel name (e.g. most monologue videos are the channel username speaking)
 - Determine the type of content (e.g. tutorial, opinion, narrative, news) and summarize it neutrally and concisely.
-- Use markdown throughout — headings, bold, italic, lists, inline code, blockquotes, everything. **Bold** or *italicize* important terms, concepts, tools, languages, key quotes, and anything the creator emphasizes. If something matters, mark it.
+- Use markdown throughout — headings, bold, italic, lists, inline code, blockquotes, everything. **Bold** or *italicize* important terms, concepts, tools, languages, key quotes, and anything the creator emphasizes. If something matters, mark it, your output will be parsed by marked.js
 - For analytical content: identify the core argument and any assumptions or contradictions.
-- For narrative content: summarize the plot and note what makes it compelling or flawed.
+- For narrative content: summarize the plot and note what makes it compelling or flawed. Point out common patterns in narratives, like setting up the villain, provoking emotion in the viewer, etc...
 - For technical/tutorial content: extract key concepts and methods, note any questionable claims.
 - For news: contextualize framing and implications.
 - Add anything else important about the video.
 - Do not label sections with headings like "Summary:" or "Analysis:" — just output the content directly.
-- Keep the tone direct and neutral. Do not be rude, but do not embellish or editorialize.
+- Keep the tone direct and neutral. Do not be rude, unless you think you need to be, but do not embellish or editorialize.
 
 ${metadataBlock}`;
 
@@ -181,7 +184,7 @@ ${metadataBlock}`;
     }
 
     const systemPrompt = buildSystemPrompt();
-
+    console.log("Full prompt sent to the AI api:\n", systemPrompt);
     try {
         const response = await fetch(`${baseUrl}/chat/completions`, {
             method: 'POST',
