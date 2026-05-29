@@ -91,7 +91,7 @@ async function fetchTranscript(url) {
         console.log('Transcript server response:', data);
 
         if (!data || !data.text) {
-            throw new Error("Invalid response format from transcript server\nIt's possible the channel disabled captions");
+            throw new Error("Invalid response format from transcript server\nIt's possible the channel disabled captions OR is a music video");
         }
 
         return { text: data.text, channel: data.channel || '', upload_date: data.upload_date || '' };
@@ -150,6 +150,14 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
 // use this instead of processChunks
 async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summaryStyle, channel, uploadDate, currentDate) {
     console.log('Sending full transcript to AI API...');
+    if (!channel) {
+        console.warn("channel was null");
+        channel = "null (failed to fetch channel name from yt-dlp api)";
+    }
+    if (!uploadDate) {
+        console.warn("uploadDate was null");
+        uploadDate = "null (failed to fetch upload date from yt-dlp api)";
+    }
 
     function buildSystemPrompt() {
         const metadataBlock = `Additional video information:\n# channel name: ${channel}\n# video upload date: ${uploadDate}\n# current date: ${currentDate}`;
@@ -184,7 +192,9 @@ ${metadataBlock}`;
     }
 
     const systemPrompt = buildSystemPrompt();
-    console.log("Full prompt sent to the AI api:\n", systemPrompt);
+    // console.log("Full system prompt sent to the AI api:\n", systemPrompt);
+    // console.log("And the full transcrpt sent to the AI api:\n", transcript);
+    console.log("Full prompt sent to the AI api (system + user):\n", systemPrompt, "\nUSER_PROMPT:\n", transcript);
     try {
         const response = await fetch(`${baseUrl}/chat/completions`, {
             method: 'POST',
