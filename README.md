@@ -1,5 +1,10 @@
 ## ai-yt-summary
 
+#### updating on debian
+```
+sudo yt-dlp -U
+uv run server.py
+```
 ### Examples:
 ![penguinz0 random video summarized](https://github.com/lesacar/ai-yt-summary/blob/main/res/1.png)
 
