@@ -107,9 +107,11 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
 
     const settings = await chrome.storage.local.get(['apiKey', 'modelName', 'baseUrl']);
     const modelName = settings.modelName;
+    const model_reasoning_effort = settings.reasoning_effort;
     let baseUrl = settings.baseUrl;
     if (!baseUrl) {throw new Error("No base url provided!")}
     if (!modelName) {throw new Error("No AI model name provided!")}
+    if (!model_reasoning_effort) {throw new Error("No reasoning_effort provided!")}
 
     // if user types api.openai.com/chat/completions/ -- strip the extra '/' for fetch because js sucks
     if (baseUrl.charAt(baseUrl.length-1) === '/') {
@@ -125,6 +127,7 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
         const summary = await sendFullTranscript(
             transcript,
             modelName,
+            reasoning_effort,
             settings.apiKey,
             baseUrl,
             summaryStyle,
@@ -148,7 +151,7 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
 }
 
 // use this instead of processChunks
-async function sendFullTranscript(transcript, modelName, apiKey, baseUrl, summaryStyle, channel, uploadDate, currentDate) {
+async function sendFullTranscript(transcript, modelName, reasoning_effort, apiKey, baseUrl, summaryStyle, channel, uploadDate, currentDate) {
     console.log('Sending full transcript to AI API...');
     if (!channel) {
         console.warn("channel was null");
@@ -181,11 +184,11 @@ Rules:
 ${metadataBlock}`;
 
         if (summaryStyle === 'concise') {
-            prompt += `\n\nAdditional instructions — make the summary as concise as possible. Retain only basic information. Instead of markdown lists, separate items by commas. Try to fit the text in one phone screen or less. Still use **bold** and *italic* to mark important terms — just do it sparingly since space is tight.`;
+            prompt += `\n\nAdditional instructions — user selected concise mode — make the summary as concise as possible. Retain only basic information. Instead of markdown lists, separate items by commas. Try to fit the text in one phone screen or less. Still use **bold** and *italic* to mark important terms — just do it sparingly since space is tight.`;
         }
 
         if (summaryStyle === 'detailed') {
-            prompt += `\n\nAdditional instructions — make the summary as detailed and comprehensive as possible. Include specific examples, key quotes if relevant, and anything that could be considered not important — the user doesn't want anything to slip by. Use markdown throughout — headings, bold, italic, lists, inline code, blockquotes. **Bold** or *italicize* important terms, concepts, tools, languages, key quotes, and anything the creator emphasizes.`;
+            prompt += `\n\nAdditional instructions — user selected detailed mode — make the summary as detailed and comprehensive as possible. Include specific examples, key quotes if relevant, and anything that could be considered not important — the user doesn't want anything to slip by. Use markdown throughout — headings, bold, italic, lists, inline code, blockquotes. **Bold** or *italicize* important terms, concepts, tools, languages, key quotes, and anything the creator emphasizes.`;
         }
 
         return prompt;
@@ -204,6 +207,7 @@ ${metadataBlock}`;
             },
             body: JSON.stringify({
                 model: modelName,
+                reasoning_effort: reasoning_effort,
                 messages: [{
                     role: 'system',
                     content: systemPrompt},
