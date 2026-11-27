@@ -251,6 +251,52 @@
         .style-row .btn:hover::after {
             opacity: 1 !important;
         }
+
+        /* ===== Settings menu ===== */
+        .navbar {
+            position: relative;
+        }
+        #menu-btn {
+            background: #444;
+            font-size: 18px;
+        }
+        .menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 8px;
+            min-width: 210px;
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+            z-index: 1001;
+            overflow: hidden;
+        }
+        .menu.open {
+            display: block;
+        }
+        .menu button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            color: #fff;
+            font-size: 13px;
+            padding: 9px 12px;
+            border-radius: 0;
+        }
+        .menu button:hover:not(:disabled) {
+            background: #3a3a3a;
+        }
+        .menu button:disabled {
+            color: #777;
+        }
+        .menu .menu-sep {
+            height: 1px;
+            background: #444;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -265,6 +311,13 @@
                 <input type="range" id="fontSizeSlider" min="10" max="24" step="2" value="16">
                 <span class="size-value" id="fontSizeValue">16px</span>
             </div>
+            <button class="nav-btn" id="menu-btn" data-tooltip="Settings and data">⚙</button>
+        </div>
+        <div class="menu" id="menu">
+            <button id="menu-settings">Open settings…</button>
+            <hr class="menu-sep">
+            <button id="menu-refresh-transcript" disabled>Refresh transcript</button>
+            <button id="menu-clear" disabled>Clear all data for this video</button>
         </div>
     </div>
 

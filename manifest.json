@@ -3,7 +3,7 @@
     "name": "Video Summarizer",
     "version": "1.0",
     "description": "Summarizes YouTube videos using AI",
-    "permissions": ["storage", "activeTab"],
+    "permissions": ["storage", "unlimitedStorage", "activeTab"],
     "host_permissions": ["<all_urls>"],
     "background": {
         "service_worker": "background.js",

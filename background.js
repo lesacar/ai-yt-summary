@@ -65,7 +65,16 @@ async function processVideo(url, summaryStyle = null) {
     }
 }
 
+const TRANSCRIPT_CACHE_PREFIX = 'transcript:';
+
 async function fetchTranscript(url) {
+    const cacheKey = TRANSCRIPT_CACHE_PREFIX + url;
+    const cached = await chrome.storage.local.get(cacheKey);
+    if (cached[cacheKey] && cached[cacheKey].text) {
+        console.log('Transcript cache hit, skipping server fetch');
+        return cached[cacheKey];
+    }
+
     console.log('Making request to transcript server...');
     const settings = await chrome.storage.local.get(['transcriptServer']);
     const serverUrl = settings.transcriptServer || 'http://localhost:5000/get_transcript';
@@ -94,7 +103,10 @@ async function fetchTranscript(url) {
             throw new Error("Invalid response format from transcript server\nIt's possible the channel disabled captions OR is a music video");
         }
 
-        return { text: data.text, channel: data.channel || '', upload_date: data.upload_date || '' };
+        const transcriptData = { text: data.text, channel: data.channel || '', upload_date: data.upload_date || '', cachedAt: Date.now() };
+        await chrome.storage.local.set({ [cacheKey]: transcriptData });
+        console.log('Transcript cached for', url);
+        return transcriptData;
     } catch (error) {
         console.error('Error in fetchTranscript:', error);
         throw error;

@@ -10,6 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const fontSizeSlider = document.getElementById('fontSizeSlider');
     const fontSizeValue = document.getElementById('fontSizeValue');
     const copyButton = document.getElementById('copy');
+    const menuButton = document.getElementById('menu-btn');
+    const menu = document.getElementById('menu');
+    const menuSettings = document.getElementById('menu-settings');
+    const menuRefreshTranscript = document.getElementById('menu-refresh-transcript');
+    const menuClear = document.getElementById('menu-clear');
+    const TRANSCRIPT_CACHE_PREFIX = 'transcript:';
 
     function isYouTubeVideoURL(url) {
         return url && (
@@ -133,6 +139,77 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    function getActiveVideoUrl() {
+        return new Promise((resolve) => {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                resolve(tabs[0]?.url?.trim() || null);
+            });
+        });
+    }
+
+    function closeMenu() {
+        menu.classList.remove('open');
+    }
+
+    async function refreshMenuItems() {
+        const url = await getActiveVideoUrl();
+        const valid = url && isYouTubeVideoURL(url);
+        if (!valid) {
+            menuRefreshTranscript.disabled = true;
+            menuClear.disabled = true;
+            return;
+        }
+        const cacheKey = TRANSCRIPT_CACHE_PREFIX + url;
+        const result = await chrome.storage.local.get([url, cacheKey]);
+        menuRefreshTranscript.disabled = !result[cacheKey];
+        menuClear.disabled = !result[url] && !result[cacheKey];
+    }
+
+    menuButton.addEventListener('click', async (event) => {
+        event.stopPropagation();
+        const opening = !menu.classList.contains('open');
+        closeMenu();
+        if (!opening) return;
+        menu.classList.add('open');
+        await refreshMenuItems();
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!menu.contains(event.target) && event.target !== menuButton) closeMenu();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMenu();
+    });
+
+    menuSettings.addEventListener('click', () => {
+        closeMenu();
+        chrome.runtime.openOptionsPage();
+    });
+
+    menuRefreshTranscript.addEventListener('click', async () => {
+        const url = await getActiveVideoUrl();
+        if (!url || !isYouTubeVideoURL(url)) return;
+        const result = await chrome.storage.local.get([url]);
+        const previous = result[url];
+        if (previous && previous.processing) {
+            closeMenu();
+            outputContent.textContent = "Already processing...";
+            return;
+        }
+        await chrome.storage.local.remove([TRANSCRIPT_CACHE_PREFIX + url, url]);
+        closeMenu();
+        startProcessing(previous?.summaryStyle || null);
+    });
+
+    menuClear.addEventListener('click', async () => {
+        const url = await getActiveVideoUrl();
+        if (!url || !isYouTubeVideoURL(url)) return;
+        await chrome.storage.local.remove([TRANSCRIPT_CACHE_PREFIX + url, url]);
+        closeMenu();
+        updateUI();
+    });
 
     updateUI();
 
