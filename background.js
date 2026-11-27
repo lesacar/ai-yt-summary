@@ -1,5 +1,16 @@
 // background.js
-import * as module from "./marked.min.js";
+// marked.min.js is a UMD bundle: it assigns itself to globalThis.marked.
+import "./marked.min.js";
+
+// Accepts a base like https://openrouter.ai/api/v1, or a pasted endpoint like
+// .../chat/completions, .../responses, .../completions, .../messages, and always
+// returns the chat-completions URL this extension actually posts to.
+function chatCompletionsEndpoint(baseUrl) {
+    const base = baseUrl.trim()
+        .replace(/\/+$/, '')
+        .replace(/\/(chat\/completions|completions|responses|messages)$/, '');
+    return `${base}/chat/completions`;
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "processVideo") {
@@ -51,14 +62,14 @@ async function processVideo(url, summaryStyle = null) {
         });
         console.log('Summary saved to storage');
 
-        chrome.runtime.sendMessage({ action: "updateUI", url: url });
+        chrome.runtime.sendMessage({ action: "updateUI", url: url }).catch(() => {});
     }
     catch (error) {
         console.error('Error in processVideo:', error);
         await chrome.storage.local.set({
             [url]: { summary: `Error: ${error.message}`, processing: false, summaryStyle }
         });
-        chrome.runtime.sendMessage({ action: "updateUI", url: url });
+        chrome.runtime.sendMessage({ action: "updateUI", url: url }).catch(() => {});
         throw error;
     } finally {
         delete processingVideos[url];
@@ -119,18 +130,10 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
 
     const settings = await chrome.storage.local.get(['apiKey', 'modelName', 'baseUrl', 'reasoning_effort']);
     const modelName = settings.modelName;
-    const model_reasoning_effort = settings.reasoning_effort || "none";
-    let baseUrl = settings.baseUrl;
+    const model_reasoning_effort = (settings.reasoning_effort || '').trim();
+    const baseUrl = (settings.baseUrl || '').trim();
     if (!baseUrl) {throw new Error("No base url provided!")}
     if (!modelName) {throw new Error("No AI model name provided!")}
-    if (!model_reasoning_effort) {throw new Error("No reasoning_effort provided!")}
-
-    // if user types api.openai.com/chat/completions/ -- strip the extra '/' for fetch because js sucks
-    if (baseUrl.charAt(baseUrl.length-1) === '/') {
-        baseUrl = baseUrl.slice(0, -1);
-    }
-
-    console.log(`endpoint used: ${baseUrl}`);
 
     console.log('Using model:', modelName);
 
@@ -210,64 +213,84 @@ ${metadataBlock}`;
     // console.log("Full system prompt sent to the AI api:\n", systemPrompt);
     // console.log("And the full transcrpt sent to the AI api:\n", transcript);
     console.log("Full prompt sent to the AI api (system + user):\n", systemPrompt, "\nUSER_PROMPT:\n", transcript);
+    // baseUrl should be an OpenAI-compatible base like https://api.openai.com/v1.
+    // Tolerate a pasted endpoint path too: strip it, because this code only ever
+    // sends chat-completions requests.
+    const endpoint = chatCompletionsEndpoint(baseUrl);
+    console.log(`endpoint used: ${endpoint}`);
+    if (endpoint !== `${baseUrl.replace(/\/+$/, '')}/chat/completions`) {
+        console.warn(`baseUrl "${baseUrl}" already contained an endpoint path; using ${endpoint}`);
+    }
+
+    const requestBody = {
+        model: modelName,
+        messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: transcript }
+        ],
+        stream: true
+    };
+    // Only send reasoning_effort when the user set one. Many OpenAI-compatible servers
+    // (and OpenAI itself) reject the field or the value "none".
+    if (reasoning_effort) requestBody.reasoning_effort = reasoning_effort;
+
     try {
-        const response = await fetch(`${baseUrl}`, {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
-            body: JSON.stringify({
-                model: modelName,
-                reasoning_effort: reasoning_effort,
-                messages: [{
-                    role: 'system',
-                    content: systemPrompt},
-                    {
-                        role: 'user',
-                        content: transcript
-                    }],
-                stream: true
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
             const err_text = await response.text();
-            console.error(err_text);
-            throw new Error(`AI API: ${response.status}`);
+            console.error(`AI API ${response.status} from ${endpoint}:`, err_text);
+            throw new Error(`AI API ${response.status}: ${err_text.slice(0, 500)}`);
         }
 
+        // Provider ignored stream:true and sent a normal JSON completion.
+        if ((response.headers.get('content-type') || '').includes('application/json')) {
+            const data = await response.json();
+            const content = data?.choices?.[0]?.message?.content;
+            if (!content) throw new Error(`AI API returned no content: ${JSON.stringify(data).slice(0, 500)}`);
+            return content;
+        }
 
         const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
         let fullSummary = '';
+
+        const handleEvent = (raw) => {
+            for (const line of raw.split('\n')) {
+                if (!line.startsWith('data:')) continue;
+                const payload = line.slice(5).trim();
+                if (!payload || payload === '[DONE]') continue;
+                let data;
+                try {
+                    data = JSON.parse(payload);
+                } catch {
+                    console.warn('Unparsable SSE event:', payload);
+                    continue;
+                }
+                if (data.error) throw new Error(`AI API stream error: ${JSON.stringify(data.error)}`);
+                const delta = data.choices?.[0]?.delta;
+                if (delta && typeof delta.content === 'string') fullSummary += delta.content;
+            }
+        };
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-
-            const text = new TextDecoder().decode(value);
-            const lines = text.split('\n');
-
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const data = JSON.parse(line.slice(6));
-                        if (data.choices && data.choices[0].delta.content) {
-                            fullSummary += data.choices[0].delta.content;
-                        }
-                    } catch (e) {
-                        if (!line.includes('[DONE]')) {
-                            console.warn('Error parsing SSE message:', e);
-                        }
-                    }
-                }
-            }
+            buffer += decoder.decode(value, { stream: true });
+            const events = buffer.split(/\r?\n\r?\n/);
+            buffer = events.pop();
+            for (const event of events) handleEvent(event);
         }
-
-        await chrome.runtime.sendMessage({ 
-            action: "updateUI",
-            partial: fullSummary
-        }).catch(() => {});
+        buffer += decoder.decode();
+        if (buffer.trim()) handleEvent(buffer);
 
         return fullSummary;
     } catch (error) {

@@ -60,6 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
         baseUrl.value = DEFAULT_OPENAI_URL;
     });
 
+    // Accept a pasted endpoint too; store a canonical base so the background
+    // always builds exactly one /chat/completions URL.
+    function normalizeBaseUrl(raw) {
+        return (raw.trim() || DEFAULT_OPENAI_URL)
+            .replace(/\/+$/, '')
+            .replace(/\/(chat\/completions|completions|responses|messages)$/, '');
+    }
+
     saveButton.addEventListener('click', () => {
         const provider = apiProvider.value;
         const settings = {
@@ -68,8 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             modelName: modelName.value.trim() || providerDefaults[provider]?.defaultModel || '',
             reasoning_effort: reasoning_effort.value.trim(),
             transcriptServer: transcriptServer.value.trim() || DEFAULT_TRANSCRIPT_SERVER,
-            // strip trailing slashes so `${baseUrl}/chat/completions` is always correct
-            baseUrl: (baseUrl.value.trim() || DEFAULT_OPENAI_URL).replace(/\/+$/, '')
+            baseUrl: normalizeBaseUrl(baseUrl.value)
         };
 
         chrome.storage.local.set(settings, () => {
