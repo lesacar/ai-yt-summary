@@ -117,7 +117,7 @@ async function fetchTranscript(url) {
 async function fetchAICompletion(transcript, channel, uploadDate, currentDate, summaryStyle = null) {
     console.log('Making request to AI API...');
 
-    const settings = await chrome.storage.local.get(['apiKey', 'modelName', 'baseUrl']);
+    const settings = await chrome.storage.local.get(['apiKey', 'modelName', 'baseUrl', 'reasoning_effort']);
     const modelName = settings.modelName;
     const model_reasoning_effort = settings.reasoning_effort || "none";
     let baseUrl = settings.baseUrl;
@@ -130,7 +130,7 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
         baseUrl = baseUrl.slice(0, -1);
     }
 
-    console.log(`endpoint used: ${baseUrl}/chat/completions`);
+    console.log(`endpoint used: ${baseUrl}`);
 
     console.log('Using model:', modelName);
 
@@ -139,7 +139,7 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
         const summary = await sendFullTranscript(
             transcript,
             modelName,
-            reasoning_effort,
+            model_reasoning_effort,
             settings.apiKey,
             baseUrl,
             summaryStyle,
@@ -211,7 +211,7 @@ ${metadataBlock}`;
     // console.log("And the full transcrpt sent to the AI api:\n", transcript);
     console.log("Full prompt sent to the AI api (system + user):\n", systemPrompt, "\nUSER_PROMPT:\n", transcript);
     try {
-        const response = await fetch(`${baseUrl}/chat/completions`, {
+        const response = await fetch(`${baseUrl}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
