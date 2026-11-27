@@ -119,7 +119,7 @@ async function fetchAICompletion(transcript, channel, uploadDate, currentDate, s
 
     const settings = await chrome.storage.local.get(['apiKey', 'modelName', 'baseUrl']);
     const modelName = settings.modelName;
-    const model_reasoning_effort = settings.reasoning_effort;
+    const model_reasoning_effort = settings.reasoning_effort || "none";
     let baseUrl = settings.baseUrl;
     if (!baseUrl) {throw new Error("No base url provided!")}
     if (!modelName) {throw new Error("No AI model name provided!")}
