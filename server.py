@@ -4,6 +4,7 @@ import subprocess
 import tempfile
 from waitress import serve
 import re
+import os
 import shlex
 import logging
 
@@ -30,29 +31,25 @@ def get_transcript():
         
         with tempfile.TemporaryDirectory() as tmpdir:
             # Download subtitles
-            cmd = [
-                'yt-dlp',
-                '--no-playlist',
-                '--skip-download',
-                '--js-runtimes', 'deno',
-                '--write-subs',
-                '--write-auto-subs',
-                '--sub-lang', 'en',
-                '--sub-format', 'ttml',
-                '--convert-subs', 'srt',
-                '--output', f'{tmpdir}/transcript.%(ext)s',
-                url
-            ]
-
-            print("yt-dlp command:")
-            print(shlex.join(cmd))
-            subprocess.run(cmd, check=True)
-
+            for flag, lang in [('--write-subs', 'en'),
+                               ('--write-auto-subs', 'en-orig'),
+                               ('--write-auto-subs', 'en')]:
+                cmd = ['yt-dlp', '--no-playlist', '--skip-download',
+                       '--js-runtimes', 'deno', flag, '--sub-lang', lang,
+                       '--sub-format', 'ttml', '--convert-subs', 'srt',
+                       '--output', f'{tmpdir}/transcript.%(ext)s', url]
+                print(shlex.join(cmd))
+                subprocess.run(cmd)
+                srt = f'{tmpdir}/transcript.{lang}.srt'
+                if os.path.exists(srt):
+                    break
+            else:
+                raise Exception('No English subtitles downloaded, check server log')
 
             # Clean and format subtitles
             output_file = f'{tmpdir}/output.txt'
             subprocess.run(f"""
-                cat {tmpdir}/transcript.en.srt | 
+                cat {srt} |
                 sed '/^$/d' | 
                 grep -v '^[0-9]*$' | 
                 grep -v '\\-->' | 
